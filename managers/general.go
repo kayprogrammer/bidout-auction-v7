@@ -1,31 +1,29 @@
 package managers
 
 import (
-	"github.com/satori/go.uuid"
+	// "github.com/satori/go.uuid"
 	"gorm.io/gorm"
-	"github.com/kayprogrammer/bidout-auction-v7/models"
+	// "github.com/kayprogrammer/bidout-auction-v7/models"
 
 )
 
-type SiteDetailManager struct {
-	*BaseManager
+type SiteDetailStruct struct {
+	*BaseStruct
 }
 
-func NewSiteDetailManager(model interface{}) *SiteDetailManager {
-	return &SiteDetailManager{
-		BaseManager: NewBaseManager(model),
+func SiteDetailManager(model interface{}) *SiteDetailStruct {
+	return &SiteDetailStruct{
+		BaseStruct: BaseManager(model),
 	}
 }
 
-func (m *SiteDetailManager) Get(db *gorm.DB) (interface{}, error) {
+func (m *SiteDetailStruct) Get(db *gorm.DB) (interface{}) {
 	var siteDetail interface{}
 	if err := db.First(&siteDetail).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Create a new SiteDetail record if not found
 			siteDetail = m.Create(db, make(map[string]interface{}))
-		} else {
-			return nil, err
 		}
 	}
-	return siteDetail, nil
+	return siteDetail
 }

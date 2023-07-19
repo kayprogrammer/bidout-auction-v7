@@ -1,95 +1,59 @@
 package managers
 
 import (
-	"time"
 	"github.com/satori/go.uuid"
 	"gorm.io/gorm"
-	"github.com/mitchellh/mapstructure"
 )
 
-type BaseManager struct {
+type BaseStruct struct {
 	model interface{}
 }
 
-func NewBaseManager(model interface{}) *BaseManager {
-	return &BaseManager{model: model}
+func BaseManager(model interface{}) *BaseStruct {
+	return &BaseStruct{model: model}
 }
 
-func (m *BaseManager) GetAll(db *gorm.DB) ([]interface{}, error) {
+func (m *BaseStruct) GetAll(db *gorm.DB) ([]interface{}) {
 	var result []interface{}
-	if err := db.Find(&result).Error; err != nil {
-		return nil, err
-	}
-	return result, nil
+	db.Find(&result)
+	return result
 }
 
-func (m *BaseManager) GetAllIDs(db *gorm.DB) ([]uuid.UUID, error) {
+func (m *BaseStruct) GetAllIDs(db *gorm.DB) ([]uuid.UUID) {
 	var result []struct{ ID uuid.UUID }
-	if err := db.Model(m.model).Pluck("id", &result).Error; err != nil {
-		return nil, err
-	}
+	db.Model(m.model).Pluck("id", &result)
 	var ids []uuid.UUID
 	for _, item := range result {
 		ids = append(ids, item.ID)
 	}
-	return ids, nil
+	return ids
 }
 
-func (m *BaseManager) GetByID(db *gorm.DB, id uuid.UUID) (interface{}, error) {
+func (m *BaseStruct) GetByID(db *gorm.DB, id uuid.UUID) (interface{}) {
 	var result interface{}
-	if err := db.First(result, id).Error; err != nil {
-		return nil, err
-	}
-	return result, nil
+	db.First(result, id)
+	return result
 }
 
-func (m *BaseManager) Create(db *gorm.DB, objIn map[string]interface{}) (interface{}, error) {
-	objIn["created_at"] = time.Now().UTC()
-	objIn["updated_at"] = objIn["created_at"]
-	obj := m.model
-	if err := mapstructure.Decode(objIn, obj); err != nil {
-		return nil, err
-	}
-	if err := db.Create(obj).Error; err != nil {
-		return nil, err
-	}
-	return obj, nil
+func (m *BaseStruct) Create(db *gorm.DB, objIn interface{}) (interface{}) {
+	db.Create(&objIn)
+	return objIn
 }
 
-func (m *BaseManager) BulkCreate(db *gorm.DB, objIn []map[string]interface{}) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	for _, item := range objIn {
-		item["created_at"] = time.Now().UTC()
-		item["updated_at"] = item["created_at"]
-		obj := m.model
-		if err := mapstructure.Decode(item, obj); err != nil {
-			return nil, err
-		}
-		if err := db.Create(obj).Error; err != nil {
-			return nil, err
-		}
-		ids = append(ids, obj.ID)
-	}
-	return ids, nil
+func (m *BaseStruct) BulkCreate(db *gorm.DB, objIn []map[string]interface{}) (bool) {
+	db.Create(objIn)
+	return true
 }
 
-func (m *BaseManager) Update(db *gorm.DB, dbObj interface{}, objIn map[string]interface{}) (interface{}, error) {
-	if dbObj == nil {
-		return nil, nil
-	}
+func (m *BaseStruct) Update(db *gorm.DB, dbObj interface{}, objIn map[string]interface{}) (interface{}) {
 	for attr, value := range objIn {
-		if err := db.Model(dbObj).Update(attr, value).Error; err != nil {
-			return nil, err
-		}
+		db.Model(dbObj).Update(attr, value)
 	}
-	dbObj.(BaseModel).UpdatedAt = time.Now().UTC()
-	if err := db.Save(dbObj).Error; err != nil {
-		return nil, err
-	}
-	return dbObj, nil
+	db.Save(dbObj)
+	return dbObj
 }
 
-func (m *BaseManager) Delete(db *gorm.DB, dbObj interface{}) error {
+func (m *BaseStruct) Delete(db *gorm.DB, dbObj interface{}) error {
 	if dbObj != nil {
 		if err := db.Delete(dbObj).Error; err != nil {
 			return err
@@ -98,14 +62,14 @@ func (m *BaseManager) Delete(db *gorm.DB, dbObj interface{}) error {
 	return nil
 }
 
-func (m *BaseManager) DeleteByID(db *gorm.DB, id uuid.UUID) error {
+func (m *BaseStruct) DeleteByID(db *gorm.DB, id uuid.UUID) error {
 	if err := db.Delete(m.model, id).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *BaseManager) DeleteAll(db *gorm.DB) error {
+func (m *BaseStruct) DeleteAll(db *gorm.DB) error {
 	if err := db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(m.model).Error; err != nil {
 		return err
 	}

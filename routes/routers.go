@@ -9,15 +9,16 @@ func SetupRoutes(app *fiber.App) {
 
 	// General Routes
 	generalRouter := api.Group("/general")
+	generalRouter.Get("/site", GetSiteDetails)
 
 	// Auth Routes
-	authRouter := api.Group("/auth")
+	// authRouter := api.Group("/auth")
 
-	// Listings Routes
-	listingsRouter := api.Group("/listings")
+	// // Listings Routes
+	// listingsRouter := api.Group("/listings")
 
-	// Auctioneer Routes
-	auctioneerRouter := api.Group("/auctioneer")
+	// // Auctioneer Routes
+	// auctioneerRouter := api.Group("/auctioneer")
 
 
 }
