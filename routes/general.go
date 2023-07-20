@@ -19,3 +19,19 @@ func GetSiteDetails(c *fiber.Ctx) error {
 	}
 	return c.Status(200).JSON(responseSiteDetail)
 }
+
+func Subscribe(c *fiber.Ctx) error {
+	var subscriber models.Subscriber
+
+	if err := c.BodyParser(&subscriber); err != nil {
+		return c.Status(400).JSON(err.Error())
+	}
+
+	database.Database.Db.Where(models.Subscriber{Email: subscriber.Email}).FirstOrCreate(&subscriber)
+
+	responseSubscriber := schemas.SubscriberResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Subscription successful!"}.Init(), 
+		Data: subscriber,
+	}
+	return c.Status(200).JSON(responseSubscriber)
+}

@@ -43,7 +43,7 @@ func ConnectDb() {
 	log.Println("Running Migrations")
 
 	// Add Migrations
-	db.AutoMigrate(&models.SiteDetail{})
+	db.AutoMigrate(&models.File{}, &models.SiteDetail{}, &models.Subscriber{}, &models.User{}, &models.Jwt{}, &models.Otp{})
 
 	Database = DbInstance{Db: db}
 }
