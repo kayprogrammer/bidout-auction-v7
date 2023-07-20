@@ -9,7 +9,7 @@ func SetupRoutes(app *fiber.App) {
 
 	// General Routes
 	generalRouter := api.Group("/general")
-	generalRouter.Get("/site", GetSiteDetails)
+	generalRouter.Get("/site-detail", GetSiteDetails)
 
 	// Auth Routes
 	// authRouter := api.Group("/auth")

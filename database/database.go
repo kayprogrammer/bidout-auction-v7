@@ -29,7 +29,10 @@ func ConnectDb() {
 		"disable",
 		"UTC",
 	)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt: true,
+	})
 
 	if err != nil {
 		log.Fatal("Failed to connect to the database! \n", err.Error())
