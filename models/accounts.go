@@ -31,7 +31,7 @@ func (obj User) FullName() string {
 type Jwt struct {
 	BaseModel
 	UserId				uuid.UUID		`json:"user_id"`
-	User				User			`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;"`
+	User				User			`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;unique;"`
 	Access				string			`json:"access"`
 	Refresh				string			`json:"refresh"`
 }
@@ -39,7 +39,7 @@ type Jwt struct {
 type Otp struct {
 	BaseModel
 	UserId				uuid.UUID		`json:"user_id"`
-	User				User			`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;"`
+	User				User			`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;unique;"`
 	Code				string			`json:"code"`
 }
 

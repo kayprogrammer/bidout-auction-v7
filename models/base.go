@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	"fmt"
 
 	"github.com/satori/go.uuid"
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ type BaseModel struct {
 }
 
 func (obj *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
+	fmt.Println("Working")
     obj.ID = uuid.NewV4()
     obj.CreatedAt = time.Now().UTC()
     obj.UpdatedAt = time.Now().UTC()

@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"github.com/satori/go.uuid"
+
+)
 
 type SiteDetail struct {
 	BaseModel
@@ -22,5 +26,14 @@ type Subscriber struct {
 
 func (obj *SiteDetail) BeforeCreate(tx *gorm.DB) (err error) {
     obj.Name = "Kay's Auction House"
+	obj.BaseModel.BeforeCreate(tx)
     return
+}
+
+type Review struct {
+	BaseModel
+    ReviewerId			uuid.UUID		`json:"reviewer_id"`
+	Reviewer			User			`gorm:"foreignKey:ReviewerId;constraint:OnDelete:CASCADE;unique;"`
+	Show				bool			`json:"-"`
+	Text				string			`json:"text"`
 }
