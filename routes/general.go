@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/database"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
@@ -21,12 +22,13 @@ func GetSiteDetails(c *fiber.Ctx) error {
 }
 
 func Subscribe(c *fiber.Ctx) error {
-	var subscriber models.Subscriber
+	subscriber := models.Subscriber{}
+	fmt.Println(c.AllParams())
 
 	if err := c.BodyParser(&subscriber); err != nil {
 		return c.Status(400).JSON(err.Error())
 	}
-
+	fmt.Println(subscriber)
 	database.Database.Db.Where(models.Subscriber{Email: subscriber.Email}).FirstOrCreate(&subscriber)
 
 	responseSubscriber := schemas.SubscriberResponseSchema{

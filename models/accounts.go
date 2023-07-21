@@ -11,15 +11,15 @@ import (
 
 type User struct {
 	BaseModel
-	FirstName				string			`json:"first_name"`
-	LastName				string			`json:"last_name"`
-	Email					string			`json:"email"`
-	Password				string			`json:"password"`
-	IsEmailVerified			bool			`json:"is_email_verified"`
-	IsSuperuser				bool			`json:"is_superuser"`
-	IsStaff					bool			`json:"is_staff"`
-	TermsAgreement			bool			`json:"terms_agreement"`
-	AvatarId				uuid.UUID		`json:"avatar_id"`
+	FirstName				string			`json:"first_name" gorm:"type: varchar(50);not null"`
+	LastName				string			`json:"last_name" gorm:"type: varchar(50);not null"`
+	Email					string			`json:"email" gorm:"not null"`
+	Password				string			`json:"password" gorm:"not null"`
+	IsEmailVerified			bool			`json:"is_email_verified" gorm:"not null"`
+	IsSuperuser				bool			`json:"is_superuser" gorm:"not null"`
+	IsStaff					bool			`json:"is_staff" gorm:"not null"`
+	TermsAgreement			bool			`json:"terms_agreement" gorm:"not null"`
+	AvatarId				uuid.UUID		`json:"avatar_id" gorm:"not null"`
 	Avatar					File			`gorm:"foreignKey:AvatarId;constraint:OnDelete:SET NULL;"`
 }
 
@@ -30,17 +30,17 @@ func (obj User) FullName() string {
 
 type Jwt struct {
 	BaseModel
-	UserId				uuid.UUID		`json:"user_id"`
-	User				User			`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;unique;"`
-	Access				string			`json:"access"`
-	Refresh				string			`json:"refresh"`
+	UserId				uuid.UUID		`json:"user_id" gorm:"not null"`
+	User				User			`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;unique;not null"`
+	Access				string			`json:"access" gorm:"not null"`
+	Refresh				string			`json:"refresh" gorm:"not null"`
 }
 
 type Otp struct {
 	BaseModel
-	UserId				uuid.UUID		`json:"user_id"`
-	User				User			`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;unique;"`
-	Code				string			`json:"code"`
+	UserId				uuid.UUID		`json:"user_id" gorm:"not null"`
+	User				User			`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;unique;not null"`
+	Code				string			`json:"code" gorm:"type:varchar(6);not null"`
 }
 
 func (obj Otp) CheckExpiration() bool {
