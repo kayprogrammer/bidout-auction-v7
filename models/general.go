@@ -20,7 +20,7 @@ type SiteDetail struct {
 
 type Subscriber struct {
 	BaseModel
-	Email		string		`json:"email" gorm:"not null" validate:"required,min=5"`
+	Email		string		`json:"email" gorm:"not null" validate:"required,min=5,email"`
 	Exported	string		`json:"-" gorm:"default:false"`
 }
 
