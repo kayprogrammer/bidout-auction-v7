@@ -1,9 +1,9 @@
 package models
 
 import (
-	"gorm.io/gorm"
+	"github.com/kayprogrammer/bidout-auction-v7/utils"
 	"github.com/satori/go.uuid"
-
+	"gorm.io/gorm"
 )
 
 type SiteDetail struct {
@@ -47,7 +47,14 @@ func (obj Review) Init(db *gorm.DB) Review{
 	reviewer := User{}
 	db.Find(&reviewer,"id = ?", obj.ReviewerId)
 	name := reviewer.FullName()
-	// avatar := nil
-	obj.Reviewer = ReviewerData{Name: name}
+	obj.Reviewer.Name = name
+
+	avatarId := reviewer.AvatarId
+	if avatarId != nil {
+		avatar := File{}
+		db.Find(&avatar,"id = ?", avatarId)
+		url := utils.GenerateFileUrl(avatarId.String(), "avatars", avatar.ResourceType)
+		obj.Reviewer.Avatar = &url
+	}
 	return obj
 }
