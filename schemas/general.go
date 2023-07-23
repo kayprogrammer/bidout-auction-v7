@@ -11,3 +11,8 @@ type SubscriberResponseSchema struct {
 	ResponseSchema
 	Data			models.Subscriber		`json:"data"`
 }
+
+type ReviewsResponseSchema struct {
+	ResponseSchema
+	Data			[]models.Review		`json:"data"`
+}

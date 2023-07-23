@@ -26,14 +26,28 @@ type Subscriber struct {
 
 func (obj *SiteDetail) BeforeCreate(tx *gorm.DB) (err error) {
     obj.Name = "Kay's Auction House"
-	obj.BaseModel.BeforeCreate(tx)
     return
+}
+
+type ReviewerData struct {
+	Name				string				`json:"name"`
+	Avatar				*string				`json:"avatar"`
 }
 
 type Review struct {
 	BaseModel
-    ReviewerId			uuid.UUID		`json:"reviewer_id" gorm:"not null"`
-	Reviewer			User			`gorm:"foreignKey:ReviewerId;constraint:OnDelete:CASCADE;unique;not null"`
-	Show				bool			`json:"-" gorm:"not null"`
-	Text				string			`json:"text" gorm:"type:varchar(200);not null"`
+    ReviewerId			uuid.UUID			`json:"-" gorm:"not null"`
+	ReviewerObj			User				`json:"-" gorm:"foreignKey:ReviewerId;constraint:OnDelete:CASCADE;unique;not null"`
+	Reviewer			ReviewerData		`json:"reviewer" gorm:"-"`	
+	Show				bool				`json:"-" gorm:"not null"`
+	Text				string				`json:"text" gorm:"type:varchar(200);not null"`
+}
+
+func (obj Review) Init(db *gorm.DB) Review{
+	reviewer := User{}
+	db.Find(&reviewer,"id = ?", obj.ReviewerId)
+	name := reviewer.FullName()
+	// avatar := nil
+	obj.Reviewer = ReviewerData{Name: name}
+	return obj
 }

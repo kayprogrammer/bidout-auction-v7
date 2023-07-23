@@ -13,12 +13,6 @@ type BaseModel struct {
 	UpdatedAt 	time.Time `json:"-" gorm:"not null"`
 }
 
-func (obj *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
-    obj.CreatedAt = time.Now().UTC()
-    obj.UpdatedAt = time.Now().UTC()
-    return
-}
-
 func (obj *BaseModel) BeforeUpdate(tx *gorm.DB) (err error) {
     obj.UpdatedAt = time.Now().UTC()
     return

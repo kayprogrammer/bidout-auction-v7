@@ -23,9 +23,9 @@ type User struct {
 	Avatar					*File			`gorm:"foreignKey:AvatarId;constraint:OnDelete:SET NULL;null;"`
 }
 
-func (obj User) FullName() string {
+func (user User) FullName() string {
 	fullName := "%s %s"
-	return fmt.Sprintf(fullName, obj.FirstName, obj.LastName)
+	return fmt.Sprintf(fullName, user.FirstName, user.LastName)
 }
 
 type Jwt struct {

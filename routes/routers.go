@@ -11,6 +11,7 @@ func SetupRoutes(app *fiber.App) {
 	generalRouter := api.Group("/general")
 	generalRouter.Get("/site-detail", GetSiteDetails)
 	generalRouter.Post("/subscribe", Subscribe)
+	generalRouter.Get("/reviews", GetReviews)
 
 
 	// Auth Routes
