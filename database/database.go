@@ -42,6 +42,12 @@ func ConnectDb() {
 	db.Logger = logger.Default.LogMode(logger.Info)
 	log.Println("Running Migrations")
 
+	// Add UUID extension
+	result := db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+    if result.Error != nil {
+        log.Fatal("failed to create extension: " + result.Error.Error())
+    }
+
 	// Add Migrations
 	db.AutoMigrate(&models.File{}, &models.SiteDetail{}, &models.Subscriber{}, &models.Review{}, &models.User{}, &models.Jwt{}, &models.Otp{})
 

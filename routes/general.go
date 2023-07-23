@@ -25,6 +25,8 @@ func Subscribe(c *fiber.Ctx) error {
 	validator := utils.Validator()
 	subscriber := models.Subscriber{}
 
+	c.BodyParser(&subscriber)
+
 	// Validate request
 	if err := validator.Validate(subscriber); err != nil {
         return c.Status(422).JSON(err)

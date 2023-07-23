@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-    // "net/mail"
 
     "github.com/go-playground/locales/en"
     "github.com/go-playground/universal-translator"
@@ -28,13 +27,6 @@ func (e *CustomValidationError) Error() string {
     return e.Message
 }
 
-// Email Validator
-// func customEmailValidator(fl validator.FieldLevel) bool {
-//     email := fl.Field().String()
-//     _, err := mail.ParseAddress(email)
-//     return err == nil
-// }
-
 // Initialize the custom validator and translator
 func init() {
     customValidator = validator.New()
@@ -50,8 +42,6 @@ func init() {
 		return name
 	})
 
-    // Register Validators
-    // customValidator.RegisterValidation("email", customEmailValidator)
 }
 
 // Register translations
@@ -71,6 +61,7 @@ func registerTranslations(param string) {
     registerTranslation("min", minErrMsg, translator)
     maxErrMsg := fmt.Sprintf("%s characters max", param)
     registerTranslation("max", maxErrMsg, translator)
+    registerTranslation("email", "Invalid Email", translator)
 }
 
 // CustomValidator is a custom validator that uses "github.com/go-playground/validator/v10"
