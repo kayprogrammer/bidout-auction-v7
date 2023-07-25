@@ -22,3 +22,8 @@ type File struct {
 	BaseModel
 	ResourceType		string 		`json:"resource_type" gorm:"not null"`
 }
+
+type ShortUserData struct {
+	Name				string				`json:"name"`
+	Avatar				*string				`json:"avatar"`
+}

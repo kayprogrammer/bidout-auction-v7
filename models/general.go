@@ -21,7 +21,7 @@ type SiteDetail struct {
 type Subscriber struct {
 	BaseModel
 	Email		string		`json:"email" gorm:"not null" validate:"required,min=5,email"`
-	Exported	string		`json:"-" gorm:"default:false"`
+	Exported	bool		`json:"-" gorm:"default:false"`
 }
 
 func (obj *SiteDetail) BeforeCreate(tx *gorm.DB) (err error) {
@@ -29,17 +29,13 @@ func (obj *SiteDetail) BeforeCreate(tx *gorm.DB) (err error) {
     return
 }
 
-type ReviewerData struct {
-	Name				string				`json:"name"`
-	Avatar				*string				`json:"avatar"`
-}
 
 type Review struct {
 	BaseModel
     ReviewerId			uuid.UUID			`json:"-" gorm:"not null"`
-	ReviewerObj			User				`json:"-" gorm:"foreignKey:ReviewerId;constraint:OnDelete:CASCADE;unique;not null"`
-	Reviewer			ReviewerData		`json:"reviewer" gorm:"-"`	
-	Show				bool				`json:"-" gorm:"not null"`
+	ReviewerObj			User				`json:"-" gorm:"foreignKey:ReviewerId;constraint:OnDelete:CASCADE;not null"`
+	Reviewer			ShortUserData		`json:"reviewer" gorm:"-"`	
+	Show				bool				`json:"-" gorm:"default:false"`
 	Text				string				`json:"text" gorm:"type:varchar(200);not null"`
 }
 

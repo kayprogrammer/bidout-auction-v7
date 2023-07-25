@@ -49,7 +49,26 @@ func ConnectDb() {
     }
 
 	// Add Migrations
-	db.AutoMigrate(&models.File{}, &models.SiteDetail{}, &models.Subscriber{}, &models.Review{}, &models.User{}, &models.Jwt{}, &models.Otp{})
+	db.AutoMigrate(
+		// base
+		&models.File{}, 
+		
+		// general
+		&models.SiteDetail{}, 
+		&models.Subscriber{}, 
+		&models.Review{}, 
+
+		// accounts
+		&models.User{}, 
+		&models.Jwt{}, 
+		&models.Otp{},
+
+		// listings
+		&models.Category{}, 
+		&models.Listing{}, 
+		&models.Bid{},
+		&models.Watchlist{},
+	)
 
 	Database = DbInstance{Db: db}
 }
