@@ -2,11 +2,13 @@ package models
 
 import (
 	"fmt"
+	"log"
 	"time"
-	"github.com/satori/go.uuid"
-	"gorm.io/gorm"
-	"github.com/shopspring/decimal"
+
 	"github.com/gosimple/slug"
+	"github.com/satori/go.uuid"
+	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
 )
@@ -19,43 +21,52 @@ type Category struct {
 }
 
 // Function to retrieve a category by slug
-func getCategoryBySlug(db *gorm.DB, slug *string) (*Category, error) {
+func getCategoryBySlug(db *gorm.DB, slug *string) Category {
 	var category Category
-	err := db.Where("slug = ?", slug).First(&category).Error
+	result := db.Where("slug = ?", slug).First(&category)
+	err := result.Error 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, nil
+			return Category{}
 		}
-		return nil, err
+		log.Println(err)
 	}
-	return &category, nil
+	return category
 }
 
-func (c *Category) BeforeSave(tx *gorm.DB) error {
-	// Generate unique slug
-	createdSlug := slug.Make(c.Name)
-	updatedSlug := c.Slug
-	slug := updatedSlug
-	if updatedSlug == nil {
-		slug = &createdSlug
-	}
-	for {
-		slugExists, err := getCategoryBySlug(tx, slug)
-		if err != nil {
-			return err
+func (c *Category) BeforeSave(tx *gorm.DB) (err error) {
+	// Check if the Name field has changed
+	if c.ID != uuid.Nil {
+		var oldCategory Category
+		if result := tx.First(&oldCategory, "id = ?", c.ID); result.Error == nil {
+			// Compare the old Name with the new Name
+			if oldCategory.Name != c.Name {
+				// Generate new slug based on the updated Name
+				createdSlug := slug.Make(c.Name)
+				c.Slug = &createdSlug
+			}
 		}
-		if slugExists.ID == c.ID || slugExists == nil {
+	}
+
+	// Generate unique slug
+	if c.Slug == nil {
+		createdSlug := slug.Make(c.Name)
+		c.Slug = &createdSlug
+	}
+
+	for {
+		slugExists := getCategoryBySlug(tx, c.Slug)
+		if slugExists.ID == c.ID || slugExists.ID == uuid.Nil {
 			// Unique slug found, break the loop
 			break
 		}
 
 		// Slug exists, generate a new random string
 		randomStr := utils.GetRandomString(4)
-		newSlug := fmt.Sprintf("%s-%s", createdSlug, randomStr)
-		slug = &newSlug
-	}
-	c.Slug = slug
-	return nil
+		newSlug := fmt.Sprintf("%s-%s", *c.Slug, randomStr)
+		c.Slug = &newSlug
+	}	
+	return
 }
 
 // ---------------------------------------------------------------------------------
@@ -73,7 +84,7 @@ type Listing struct {
 	Desc 				string 				`json:"desc" gorm:"not null"`
 
 	CategoryId			*uuid.UUID			`json:"-" gorm:"null"`
-	CategoryObj			*Category			`json:"-" gorm:"foreignKey:CategoryId;constraint:OnDelete:SET NULL;unique;null"`
+	CategoryObj			*Category			`json:"-" gorm:"foreignKey:CategoryId;constraint:OnDelete:SET NULL;null"`
 	Category			*string				`json:"category" gorm:"-"`
 
 	Active				bool				`json:"active" gorm:"default:true"`
@@ -87,47 +98,56 @@ type Listing struct {
 	Image				string				`json:"image" gorm:"-"`
 }
 
-// Function to retrieve a category by slug
-func getListingBySlug(db *gorm.DB, slug *string) (*Listing, error) {
+// Function to retrieve a listing by slug
+func getListingBySlug(db *gorm.DB, slug *string) Listing {
 	var listing Listing
-	err := db.Where("slug = ?", slug).First(&listing).Error
+	result := db.Where("slug = ?", slug).First(&listing)
+	err := result.Error 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, nil
+			return Listing{}
 		}
-		return nil, err
+		log.Println(err)
 	}
-	return &listing, nil
+	return listing
 }
 
 func (listing *Listing) BeforeSave(tx *gorm.DB) (err error) {
     listing.Price = listing.Price.Round(2)
     listing.HighestBid = listing.HighestBid.Round(2)
 
-	// Generate unique slug
-	createdSlug := slug.Make(listing.Name)
-	updatedSlug := listing.Slug
-	slug := updatedSlug
-	if updatedSlug == nil {
-		slug = &createdSlug
-	}
-	for {
-		slugExists, err := getListingBySlug(tx, slug)
-		if err != nil {
-			return err
+	// Check if the Name field has changed
+	if listing.ID != uuid.Nil {
+		var oldListing Listing
+		if result := tx.First(&oldListing, "id = ?", listing.ID); result.Error == nil {
+			// Compare the old Name with the new Name
+			if oldListing.Name != listing.Name {
+				// Generate new slug based on the updated Name
+				createdSlug := slug.Make(listing.Name)
+				listing.Slug = &createdSlug
+			}
 		}
-		if slugExists.ID == listing.ID || slugExists == nil {
+	}
+
+	// Generate unique slug
+	if listing.Slug == nil {
+		createdSlug := slug.Make(listing.Name)
+		listing.Slug = &createdSlug
+	}
+
+	for {
+		slugExists := getListingBySlug(tx, listing.Slug)
+		if slugExists.ID == listing.ID || slugExists.ID == uuid.Nil {
 			// Unique slug found, break the loop
 			break
 		}
 
 		// Slug exists, generate a new random string
 		randomStr := utils.GetRandomString(4)
-		newSlug := fmt.Sprintf("%s-%s", createdSlug, randomStr)
-		slug = &newSlug
-	}
-	listing.Slug = slug
-	return nil
+		newSlug := fmt.Sprintf("%s-%s", *listing.Slug, randomStr)
+		listing.Slug = &newSlug
+	}	
+	return
 }
 
 func (listing Listing) TimeLeftSeconds() int64 {

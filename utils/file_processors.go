@@ -11,13 +11,27 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+
+	"github.com/kayprogrammer/bidout-auction-v7/config"
+
 )
 
-var cloudName = os.Getenv("CLOUDINARY_CLOUD_NAME")
-var apiKey = os.Getenv("CLOUDINARY_API_KEY")
-var apiSecret = os.Getenv("CLOUDINARY_API_SECRET")
-var cld, _ = cloudinary.NewFromParams(cloudName, apiKey, apiSecret)
+var cloudName string
+var apiKey string
+var apiSecret string 
+var cld *cloudinary.Cloudinary
 var baseFolder = "bidout-auction-v7/"
+
+func init() {
+	cfg := config.GetConfig()
+	// Load environment variables here
+	cloudName = cfg.CloudinaryCloudName
+	apiKey = cfg.CloudinaryAPIKey
+	apiSecret = cfg.CloudinaryAPISecret
+
+	// Initialize the Cloudinary client
+	cld, _ = cloudinary.NewFromParams(cloudName, apiKey, apiSecret)
+}
 
 type SignatureFormat struct {
 	PublicId  string `json:"public_id"`
@@ -63,7 +77,9 @@ func GenerateFileSignature(key string, folder string) SignatureFormat {
 		values.Add(k, fmt.Sprintf("%v", v))
 	}
 	resp, err := api.SignParameters(values, apiSecret)
-	log.Fatal("Error signing params: ", err)
+	if err != nil {
+		log.Fatal("Error signing params: ", err)
+	}
 
 	signature := retrieveSignatureFromUrl(resp)
 	signatureResp := SignatureFormat{PublicId: key, Signature: signature, Timestamp: timestamp}
@@ -90,38 +106,9 @@ func BoolAddr(b bool) *bool {
 	return &boolVar
 }
 
-func UploadImage(file, key string, folder string) {
+func UploadImage(file *os.File, key string, folder string) {
 	key = fmt.Sprintf("%s%s/%s", baseFolder, folder, key)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: key, Overwrite: BoolAddr(true), Faces: BoolAddr(true)})
 }
-
-// func uploadToCloudinary(filePath string) (string, error) {
-// 	// Open the file for upload
-// 	file, err := os.Open(filePath)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	defer file.Close()
-
-// 	// Upload the file to Cloudinary
-// 	uploadResult, err := uploader.Upload(file, uploader.UploadParams{})
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	// Return the public URL of the uploaded file
-// 	return uploadResult.SecureURL, nil
-// }
-
-// func main() {
-// 	filePath := "/path/to/your/local/file.jpg" // Replace this with your file's actual path
-// 	uploadedURL, err := uploadToCloudinary(filePath)
-// 	if err != nil {
-// 		fmt.Println("Error uploading file:", err)
-// 		return
-// 	}
-
-// 	fmt.Println("File uploaded successfully. Public URL:", uploadedURL)
-// }

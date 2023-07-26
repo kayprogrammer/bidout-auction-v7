@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/kayprogrammer/bidout-auction-v7/models"
+	"github.com/kayprogrammer/bidout-auction-v7/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -18,14 +19,16 @@ type DbInstance struct {
 var Database DbInstance
 
 func ConnectDb() {
+	cfg := config.GetConfig()
+
 	dsnTemplate := "host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s"
 	dsn := fmt.Sprintf(
 		dsnTemplate,
-		os.Getenv("POSTGRES_SERVER"),
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"),
-		os.Getenv("POSTGRES_PORT"),
+		cfg.PostgresServer,
+		cfg.PostgresUser,
+		cfg.PostgresPassword,
+		cfg.PostgresDB,
+		cfg.PostgresPort,
 		"disable",
 		"UTC",
 	)

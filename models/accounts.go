@@ -1,11 +1,9 @@
 package models
 
 import (
-	"os"
 	"time"
 	"fmt"
-	"strconv"
-
+	"github.com/kayprogrammer/bidout-auction-v7/config"
 	"github.com/satori/go.uuid"
 )
 
@@ -46,13 +44,6 @@ type Otp struct {
 func (obj Otp) CheckExpiration() bool {
 	currentTime := time.Now().UTC()
 	diff := int64(obj.UpdatedAt.Sub(currentTime).Seconds())
-	emailExpirySecondsTimeout, err := strconv.ParseInt(os.Getenv("EMAIL_OTP_EXPIRE_SECONDS"), 10, 64)
-    if err != nil {
-        fmt.Println("Error parsing comparison value:", err)
-    }
-
-	if diff > emailExpirySecondsTimeout {
-		return true
-	}
-	return false
+	emailExpirySecondsTimeout := config.GetConfig().EmailOTPExpireSeconds
+	return diff > emailExpirySecondsTimeout
 }
