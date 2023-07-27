@@ -1,0 +1,122 @@
+consumes:
+- application/json
+definitions:
+  models.Review:
+    properties:
+      reviewer:
+        $ref: '#/definitions/models.ShortUserData'
+      text:
+        type: string
+    type: object
+  models.ShortUserData:
+    properties:
+      avatar:
+        type: string
+      name:
+        type: string
+    type: object
+  models.SiteDetail:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      fb:
+        type: string
+      ig:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      tw:
+        type: string
+      wh:
+        type: string
+    type: object
+  models.Subscriber:
+    properties:
+      email:
+        minLength: 5
+        type: string
+    required:
+    - email
+    type: object
+  schemas.ReviewsResponseSchema:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Review'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  schemas.SiteDetailResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/models.SiteDetail'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  schemas.SubscriberResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/models.Subscriber'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: A simple bidding API built with Fiber
+  title: Bidout Auction API
+  version: "7.0"
+paths:
+  /api/v7/general/reviews:
+    get:
+      description: This endpoint retrieves a few reviews of the application.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ReviewsResponseSchema'
+      summary: Retrieve site reviews
+      tags:
+      - General
+  /api/v7/general/site-detail:
+    get:
+      description: This endpoint retrieves few details of the site/application.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.SiteDetailResponseSchema'
+      summary: Retrieve site details
+      tags:
+      - General
+  /api/v7/general/subscribe:
+    post:
+      description: This endpoint creates a newsletter subscriber in our application
+      parameters:
+      - description: Subscriber object
+        in: body
+        name: subscriber
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscriber'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/schemas.SubscriberResponseSchema'
+      summary: Add a subscriber
+      tags:
+      - General
+produces:
+- application/json
+swagger: "2.0"

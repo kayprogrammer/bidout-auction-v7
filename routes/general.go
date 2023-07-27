@@ -8,6 +8,11 @@ import (
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
 )
 
+// @Summary Retrieve site details
+// @Description This endpoint retrieves few details of the site/application.
+// @Tags General
+// @Success 200 {object} schemas.SiteDetailResponseSchema
+// @Router /api/v7/general/site-detail [get]
 func GetSiteDetails(c *fiber.Ctx) error {
 	var sitedetail models.SiteDetail
 
@@ -20,6 +25,12 @@ func GetSiteDetails(c *fiber.Ctx) error {
 	return c.Status(200).JSON(responseSiteDetail)
 }
 
+// @Summary Add a subscriber
+// @Description This endpoint creates a newsletter subscriber in our application
+// @Tags General
+// @Param subscriber body models.Subscriber true "Subscriber object"
+// @Success 201 {object} schemas.SubscriberResponseSchema
+// @Router /api/v7/general/subscribe [post]
 func Subscribe(c *fiber.Ctx) error {
 	validator := utils.Validator()
 	subscriber := models.Subscriber{}
@@ -41,6 +52,11 @@ func Subscribe(c *fiber.Ctx) error {
 	return c.Status(200).JSON(responseSubscriber)
 }
 
+// @Summary Retrieve site reviews
+// @Description This endpoint retrieves a few reviews of the application.
+// @Tags General
+// @Success 200 {object} schemas.ReviewsResponseSchema
+// @Router /api/v7/general/reviews [get]
 func GetReviews(c *fiber.Ctx) error {
 	reviews := []models.Review{}
 	db := database.Database.Db
