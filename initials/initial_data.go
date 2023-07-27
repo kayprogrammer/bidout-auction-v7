@@ -16,16 +16,16 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
-
+var	truth = true
 func createSuperUser(db *gorm.DB) models.User {
 	user := models.User{
 		FirstName:       "Test",
 		LastName:        "Admin",
 		Email:           "testadmin@email.com",
 		Password:        utils.HashPassword("testadmin"),
-		IsSuperuser:     true,
-		IsStaff:         true,
-		IsEmailVerified: true,
+		IsSuperuser:     &truth,
+		IsStaff:         &truth,
+		IsEmailVerified: &truth,
 	}
 	db.Where(models.User{Email: user.Email}).FirstOrCreate(&user)
 	return user
@@ -37,7 +37,7 @@ func createAutioneer(db *gorm.DB) models.User {
 		LastName:        "Auctioneer",
 		Email:           "testauctioneer@email.com",
 		Password:        utils.HashPassword("testauctioneer"),
-		IsEmailVerified: true,
+		IsEmailVerified: &truth,
 	}
 	db.Where(models.User{Email: user.Email}).FirstOrCreate(&user)
 	return user
@@ -49,7 +49,7 @@ func createReviewer(db *gorm.DB) models.User {
 		LastName:        "Reviewer",
 		Email:           "testreviewer@email.com",
 		Password:        utils.HashPassword("testreviewer"),
-		IsEmailVerified: true,
+		IsEmailVerified: &truth,
 	}
 	db.Where(models.User{Email: user.Email}).FirstOrCreate(&user)
 	return user

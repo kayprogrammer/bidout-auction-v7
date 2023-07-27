@@ -36,7 +36,7 @@ type Configuration struct {
 	MailSenderEmail           string
 	MailSenderPassword        string
 	MailSenderHost            string
-	MailSenderPort            string
+	MailSenderPort            int
 	CORSAllowedOrigins        string
 }
 
@@ -51,6 +51,7 @@ func init() {
 
 	// Convert string-based numeric variables to their respective types
 	emailOTPExpireSeconds, _ := strconv.ParseInt(os.Getenv("EMAIL_OTP_EXPIRE_SECONDS"), 10, 64)
+	mailSenderPort, _ := strconv.Atoi(os.Getenv("MAIL_SENDER_PORT"))
 	accessTokenExpireMinutes, _ := strconv.Atoi(os.Getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 	refreshTokenExpireMinutes, _ := strconv.Atoi(os.Getenv("REFRESH_TOKEN_EXPIRE_MINUTES"))
 
@@ -79,7 +80,7 @@ func init() {
 		MailSenderEmail:           os.Getenv("MAIL_SENDER_EMAIL"),
 		MailSenderPassword:        os.Getenv("MAIL_SENDER_PASSWORD"),
 		MailSenderHost:            os.Getenv("MAIL_SENDER_HOST"),
-		MailSenderPort:            os.Getenv("MAIL_SENDER_PORT"),
+		MailSenderPort:            mailSenderPort,
 		CORSAllowedOrigins:        os.Getenv("CORS_ALLOWED_ORIGINS"),
 	}
 }

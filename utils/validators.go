@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strings"
 
-    "github.com/go-playground/locales/en"
-    "github.com/go-playground/universal-translator"
-    "github.com/go-playground/validator/v10"
+	"github.com/go-playground/locales/en"
+	"github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 )
 
 var (
@@ -15,15 +15,8 @@ var (
     translator      ut.Translator
 )
 
-// CustomValidationError is a custom error type that implements the error interface
-type CustomValidationError struct {
-    Status   	string			`json:"status"`
-    Message 	string			`json:"message"`
-    Data 		interface{}		`json:"data"`
 
-}
-
-func (e *CustomValidationError) Error() string {
+func (e *ErrorResponse) Error() string {
     return e.Message
 }
 
@@ -57,18 +50,23 @@ func registerTranslations(param string) {
     }
 
     registerTranslation("required", "This field is required.", translator)
+
     minErrMsg := fmt.Sprintf("%s characters min", param)
     registerTranslation("min", minErrMsg, translator)
     maxErrMsg := fmt.Sprintf("%s characters max", param)
     registerTranslation("max", maxErrMsg, translator)
     registerTranslation("email", "Invalid Email", translator)
+
+    eqErrMsg := fmt.Sprintf("Must be %s", param)
+    registerTranslation("eq", eqErrMsg, translator)
+
 }
 
 // CustomValidator is a custom validator that uses "github.com/go-playground/validator/v10"
 type CustomValidator struct{}
 
 // Validate performs the validation of the given struct
-func (cv *CustomValidator) Validate(i interface{}) error {
+func (cv *CustomValidator) Validate(i interface{}) *ErrorResponse {
     if err := customValidator.Struct(i); err != nil {
         err := err.(validator.ValidationErrors)
         return cv.translateValidationErrors(err)
@@ -77,17 +75,17 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 // translateValidationErrors translates the validation errors to custom errors
-func (cv *CustomValidator) translateValidationErrors(errs validator.ValidationErrors) error {
+func (cv *CustomValidator) translateValidationErrors(errs validator.ValidationErrors) *ErrorResponse {
     errData := make(map[string]string)
 	for _, err := range errs {
         registerTranslations(err.Param())
 		errData[err.Field()] = err.Translate(translator)
     }
-    return &CustomValidationError{
-		Status:   "failure",
+    errResp := ErrorResponse{
 		Message: "Invalid Entry",
-		Data: errData,
-	}
+		Data: &errData,
+	}.Init()
+    return &errResp
 }
 
 // New creates a new instance of CustomValidator

@@ -24,6 +24,6 @@ type File struct {
 }
 
 type ShortUserData struct {
-	Name				string				`json:"name"`
-	Avatar				*string				`json:"avatar"`
+	Name				string				`json:"name" example:"John Doe"`
+	Avatar				*string				`json:"avatar" example:"https://my-avatar.com"`
 }

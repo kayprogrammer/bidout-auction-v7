@@ -6,41 +6,93 @@ definitions:
       reviewer:
         $ref: '#/definitions/models.ShortUserData'
       text:
+        example: This is a nice review
         type: string
     type: object
   models.ShortUserData:
     properties:
       avatar:
+        example: https://my-avatar.com
         type: string
       name:
+        example: John Doe
         type: string
     type: object
   models.SiteDetail:
     properties:
       address:
+        example: 234, Lagos, Nigeria
         type: string
       email:
+        example: johndoe@email.com
         type: string
       fb:
+        example: https://facebook.com
         type: string
       ig:
+        example: https://instagram.com
         type: string
       name:
         type: string
       phone:
+        example: "+2348133831036"
         type: string
       tw:
+        example: https://twitter.com
         type: string
       wh:
+        example: https://wa.me/2348133831036
         type: string
     type: object
   models.Subscriber:
     properties:
       email:
+        example: johndoe@email.com
         minLength: 5
         type: string
     required:
     - email
+    type: object
+  models.User:
+    properties:
+      email:
+        example: johndoe@email.com
+        minLength: 5
+        type: string
+      first_name:
+        example: John
+        maxLength: 50
+        type: string
+      last_name:
+        example: Doe
+        maxLength: 50
+        type: string
+      password:
+        example: strongpassword
+        minLength: 8
+        type: string
+      terms_agreement:
+        type: boolean
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - terms_agreement
+    type: object
+  schemas.EmailRequestSchema:
+    properties:
+      email:
+        type: string
+    type: object
+  schemas.RegisterResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.EmailRequestSchema'
+      message:
+        type: string
+      status:
+        type: string
     type: object
   schemas.ReviewsResponseSchema:
     properties:
@@ -71,12 +123,45 @@ definitions:
       status:
         type: string
     type: object
+  utils.ErrorResponse:
+    properties:
+      data:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        type: string
+      status:
+        type: string
+    type: object
 info:
   contact: {}
   description: A simple bidding API built with Fiber
   title: Bidout Auction API
   version: "7.0"
 paths:
+  /api/v7/auth/register:
+    post:
+      description: This endpoint registers new users into our application.
+      parameters:
+      - description: User object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/schemas.RegisterResponseSchema'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - Auth
   /api/v7/general/reviews:
     get:
       description: This endpoint retrieves a few reviews of the application.
@@ -114,6 +199,10 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/schemas.SubscriberResponseSchema'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Add a subscriber
       tags:
       - General

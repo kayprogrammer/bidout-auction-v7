@@ -22,6 +22,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v7/auth/register": {
+            "post": {
+                "description": "This endpoint registers new users into our application.",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "User object",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.RegisterResponseSchema"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v7/general/reviews": {
             "get": {
                 "description": "This endpoint retrieves a few reviews of the application.",
@@ -80,6 +114,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/schemas.SubscriberResponseSchema"
                         }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -93,7 +133,8 @@ const docTemplate = `{
                     "$ref": "#/definitions/models.ShortUserData"
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "This is a nice review"
                 }
             }
         },
@@ -101,10 +142,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://my-avatar.com"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 }
             }
         },
@@ -112,28 +155,35 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "234, Lagos, Nigeria"
                 },
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "johndoe@email.com"
                 },
                 "fb": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://facebook.com"
                 },
                 "ig": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://instagram.com"
                 },
                 "name": {
                     "type": "string"
                 },
                 "phone": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+2348133831036"
                 },
                 "tw": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://twitter.com"
                 },
                 "wh": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://wa.me/2348133831036"
                 }
             }
         },
@@ -145,7 +195,65 @@ const docTemplate = `{
             "properties": {
                 "email": {
                     "type": "string",
-                    "minLength": 5
+                    "minLength": 5,
+                    "example": "johndoe@email.com"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password",
+                "terms_agreement"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "minLength": 5,
+                    "example": "johndoe@email.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "Doe"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "strongpassword"
+                },
+                "terms_agreement": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "schemas.EmailRequestSchema": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.RegisterResponseSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.EmailRequestSchema"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -185,6 +293,23 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/models.Subscriber"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "message": {
                     "type": "string"

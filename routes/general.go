@@ -30,6 +30,7 @@ func GetSiteDetails(c *fiber.Ctx) error {
 // @Tags General
 // @Param subscriber body models.Subscriber true "Subscriber object"
 // @Success 201 {object} schemas.SubscriberResponseSchema
+// @Failure 422 {object} utils.ErrorResponse
 // @Router /api/v7/general/subscribe [post]
 func Subscribe(c *fiber.Ctx) error {
 	validator := utils.Validator()
