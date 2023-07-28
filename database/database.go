@@ -10,6 +10,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+    "github.com/gofiber/fiber/v2"
+
 )
 
 type DbInstance struct {
@@ -74,4 +76,9 @@ func ConnectDb() {
 	)
 
 	Database = DbInstance{Db: db}
+}
+
+func DatabaseMiddleware(c *fiber.Ctx) error {
+	c.Locals("db", Database.Db)
+	return c.Next()
 }

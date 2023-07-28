@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"encoding/base64"
 	"math/rand"
+	r "crypto/rand"
 	"time"
 )
 
@@ -38,4 +40,12 @@ func intPow(base, exponent int) int {
 		result *= base
 	}
 	return result
+}
+
+// generateRandomPassword generates a random password for the test database
+func GenerateRandomPassword() string {
+	const passwordLength = 16 // You can adjust the password length as needed
+	rb := make([]byte, passwordLength)
+	r.Read(rb)
+	return base64.URLEncoding.EncodeToString(rb)
 }

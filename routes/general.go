@@ -2,10 +2,11 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/kayprogrammer/bidout-auction-v7/database"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
+	"gorm.io/gorm"
+
 )
 
 // @Summary Retrieve site details
@@ -14,9 +15,10 @@ import (
 // @Success 200 {object} schemas.SiteDetailResponseSchema
 // @Router /api/v7/general/site-detail [get]
 func GetSiteDetails(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
 	var sitedetail models.SiteDetail
 
-	database.Database.Db.FirstOrCreate(&sitedetail, &sitedetail)
+	db.FirstOrCreate(&sitedetail, &sitedetail)
 
 	responseSiteDetail := schemas.SiteDetailResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Site Details Fetched!"}.Init(),
@@ -33,6 +35,7 @@ func GetSiteDetails(c *fiber.Ctx) error {
 // @Failure 422 {object} utils.ErrorResponse
 // @Router /api/v7/general/subscribe [post]
 func Subscribe(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
 	subscriber := models.Subscriber{}
 
@@ -44,7 +47,7 @@ func Subscribe(c *fiber.Ctx) error {
 	}
 
 	// Create subscriber
-	database.Database.Db.Where(models.Subscriber{Email: subscriber.Email}).FirstOrCreate(&subscriber)
+	db.Where(models.Subscriber{Email: subscriber.Email}).FirstOrCreate(&subscriber)
 
 	responseSubscriber := schemas.SubscriberResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Subscription successful!"}.Init(),
@@ -59,8 +62,9 @@ func Subscribe(c *fiber.Ctx) error {
 // @Success 200 {object} schemas.ReviewsResponseSchema
 // @Router /api/v7/general/reviews [get]
 func GetReviews(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+
 	reviews := []models.Review{}
-	db := database.Database.Db
 
 	// Get reviews
 	db.Where(models.Review{Show: true}).Find(&reviews)

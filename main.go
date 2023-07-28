@@ -20,7 +20,13 @@ func main() {
 	database.ConnectDb()
 	db := database.Database.Db
 	initials.CreateInitialData(db)
+
 	app := fiber.New()
+
+	// Set up the database middleware
+	app.Use(database.DatabaseMiddleware)
+
+	// Register routes
 	routes.SetupRoutes(app)
 	app.Get("/*", swagger.HandlerDefault) // default
 

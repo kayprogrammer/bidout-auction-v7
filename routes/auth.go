@@ -5,14 +5,16 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/satori/go.uuid"
 
-	"github.com/kayprogrammer/bidout-auction-v7/database"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/senders"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
+	"gorm.io/gorm"
+
 )
 
 var truth = true
+
 // @Summary Register a new user
 // @Description This endpoint registers new users into our application.
 // @Tags Auth
@@ -21,7 +23,7 @@ var truth = true
 // @Failure 422 {object} utils.ErrorResponse
 // @Router /api/v7/auth/register [post]
 func Register(c *fiber.Ctx) error {
-	db := database.Database.Db
+	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
 
 	user := models.User{}
@@ -61,7 +63,7 @@ func Register(c *fiber.Ctx) error {
 // @Failure 422 {object} utils.ErrorResponse
 // @Router /api/v7/auth/verify-email [post]
 func VerifyEmail(c *fiber.Ctx) error {
-	db := database.Database.Db
+	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
 
 	verifyEmail := schemas.VerifyEmailRequestSchema{}
@@ -113,7 +115,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 // @Failure 422 {object} utils.ErrorResponse
 // @Router /api/v7/auth/resend-verification-email [post]
 func ResendVerificationEmail(c *fiber.Ctx) error {
-	db := database.Database.Db
+	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
 
 	emailSchema := schemas.EmailRequestSchema{}
