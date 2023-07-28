@@ -56,6 +56,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v7/auth/resend-verification-email": {
+            "post": {
+                "description": "This endpoint verifies a user's email.",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify a user's email",
+                "parameters": [
+                    {
+                        "description": "Email object",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.EmailRequestSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ResponseSchema"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v7/auth/verify-email": {
+            "post": {
+                "description": "This endpoint verifies a user's email.",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify a user's email",
+                "parameters": [
+                    {
+                        "description": "Verify Email object",
+                        "name": "verify_email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.VerifyEmailRequestSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ResponseSchema"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v7/general/reviews": {
             "get": {
                 "description": "This endpoint retrieves a few reviews of the application.",
@@ -206,8 +274,7 @@ const docTemplate = `{
                 "email",
                 "first_name",
                 "last_name",
-                "password",
-                "terms_agreement"
+                "password"
             ],
             "properties": {
                 "email": {
@@ -227,6 +294,7 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string",
+                    "maxLength": 50,
                     "minLength": 8,
                     "example": "strongpassword"
                 },
@@ -237,9 +305,14 @@ const docTemplate = `{
         },
         "schemas.EmailRequestSchema": {
             "type": "object",
+            "required": [
+                "email"
+            ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 5,
+                    "example": "johndoe@email.com"
                 }
             }
         },
@@ -249,6 +322,17 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/schemas.EmailRequestSchema"
                 },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.ResponseSchema": {
+            "type": "object",
+            "properties": {
                 "message": {
                     "type": "string"
                 },
@@ -299,6 +383,24 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "schemas.VerifyEmailRequestSchema": {
+            "type": "object",
+            "required": [
+                "email",
+                "otp"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "minLength": 5,
+                    "example": "johndoe@example.com"
+                },
+                "otp": {
+                    "type": "integer",
+                    "example": 123456
                 }
             }
         },

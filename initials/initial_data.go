@@ -22,7 +22,7 @@ func createSuperUser(db *gorm.DB) models.User {
 		FirstName:       "Test",
 		LastName:        "Admin",
 		Email:           "testadmin@email.com",
-		Password:        utils.HashPassword("testadmin"),
+		Password:        "testadmin",
 		IsSuperuser:     &truth,
 		IsStaff:         &truth,
 		IsEmailVerified: &truth,
@@ -36,7 +36,7 @@ func createAutioneer(db *gorm.DB) models.User {
 		FirstName:       "Test",
 		LastName:        "Auctioneer",
 		Email:           "testauctioneer@email.com",
-		Password:        utils.HashPassword("testauctioneer"),
+		Password:        "testauctioneer",
 		IsEmailVerified: &truth,
 	}
 	db.Where(models.User{Email: user.Email}).FirstOrCreate(&user)
@@ -48,7 +48,7 @@ func createReviewer(db *gorm.DB) models.User {
 		FirstName:       "Test",
 		LastName:        "Reviewer",
 		Email:           "testreviewer@email.com",
-		Password:        utils.HashPassword("testreviewer"),
+		Password:        "testreviewer",
 		IsEmailVerified: &truth,
 	}
 	db.Where(models.User{Email: user.Email}).FirstOrCreate(&user)

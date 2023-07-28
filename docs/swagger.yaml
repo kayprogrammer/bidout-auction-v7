@@ -69,6 +69,7 @@ definitions:
         type: string
       password:
         example: strongpassword
+        maxLength: 50
         minLength: 8
         type: string
       terms_agreement:
@@ -78,17 +79,27 @@ definitions:
     - first_name
     - last_name
     - password
-    - terms_agreement
     type: object
   schemas.EmailRequestSchema:
     properties:
       email:
+        example: johndoe@email.com
+        minLength: 5
         type: string
+    required:
+    - email
     type: object
   schemas.RegisterResponseSchema:
     properties:
       data:
         $ref: '#/definitions/schemas.EmailRequestSchema'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  schemas.ResponseSchema:
+    properties:
       message:
         type: string
       status:
@@ -122,6 +133,19 @@ definitions:
         type: string
       status:
         type: string
+    type: object
+  schemas.VerifyEmailRequestSchema:
+    properties:
+      email:
+        example: johndoe@example.com
+        minLength: 5
+        type: string
+      otp:
+        example: 123456
+        type: integer
+    required:
+    - email
+    - otp
     type: object
   utils.ErrorResponse:
     properties:
@@ -160,6 +184,50 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Register a new user
+      tags:
+      - Auth
+  /api/v7/auth/resend-verification-email:
+    post:
+      description: This endpoint verifies a user's email.
+      parameters:
+      - description: Email object
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.EmailRequestSchema'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ResponseSchema'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Verify a user's email
+      tags:
+      - Auth
+  /api/v7/auth/verify-email:
+    post:
+      description: This endpoint verifies a user's email.
+      parameters:
+      - description: Verify Email object
+        in: body
+        name: verify_email
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.VerifyEmailRequestSchema'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ResponseSchema'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Verify a user's email
       tags:
       - Auth
   /api/v7/general/reviews:

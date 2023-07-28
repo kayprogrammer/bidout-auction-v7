@@ -25,7 +25,9 @@ func sortEmail(db *gorm.DB, user models.User, emailType string) map[string]inter
         subject = "Activate your account"
 		otp := models.Otp{}
 		db.Find(&otp, "user_id = ?", user.ID)
+		log.Println(otp.ID)
 		if otp.ID == uuid.Nil {
+			otp = models.Otp{UserId: user.ID}
 			db.Create(&otp)
 		} else {
 			db.Save(&otp)

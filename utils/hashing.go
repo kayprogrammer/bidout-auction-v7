@@ -7,7 +7,7 @@ import (
 )
 
 func HashPassword(password string) string {
-    bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+    bytes, err := bcrypt.GenerateFromPassword([]byte(password), 8)
 	log.Println(err)
     return string(bytes)
 }

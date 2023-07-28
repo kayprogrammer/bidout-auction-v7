@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"time"
+	"log"
 
 	"github.com/kayprogrammer/bidout-auction-v7/config"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
@@ -16,7 +17,7 @@ type User struct {
 	FirstName				string			`json:"first_name" gorm:"type: varchar(50);not null" validate:"required,max=50" example:"John"`
 	LastName				string			`json:"last_name" gorm:"type: varchar(50);not null" validate:"required,max=50" example:"Doe"`
 	Email					string			`json:"email" gorm:"not null" validate:"required,min=5,email" example:"johndoe@email.com"`
-	Password				string			`json:"password" gorm:"not null" validate:"required,min=8" example:"strongpassword"`
+	Password				string			`json:"password" gorm:"not null" validate:"required,min=8,max=50" example:"strongpassword"`
 	IsEmailVerified			*bool			`json:"is_email_verified" gorm:"default:false" swaggerignore:"true"`
 	IsSuperuser				*bool			`json:"is_superuser" gorm:"default:false" swaggerignore:"true"`
 	IsStaff					*bool			`json:"is_staff" gorm:"default:false" swaggerignore:"true"`
@@ -28,6 +29,11 @@ type User struct {
 func (user User) FullName() string {
 	fullName := "%s %s"
 	return fmt.Sprintf(fullName, user.FirstName, user.LastName)
+}
+
+func (user *User) BeforeSave(tx *gorm.DB) (err error) {
+	user.Password = utils.HashPassword(user.Password)
+	return
 }
 
 type Jwt struct {
@@ -53,7 +59,8 @@ func (otp *Otp) BeforeSave(tx *gorm.DB) (err error) {
 
 func (obj Otp) CheckExpiration() bool {
 	currentTime := time.Now().UTC()
-	diff := int64(obj.UpdatedAt.Sub(currentTime).Seconds())
+	diff := int64(currentTime.Sub(obj.UpdatedAt).Seconds())
 	emailExpirySecondsTimeout := config.GetConfig().EmailOTPExpireSeconds
+	log.Println(diff)
 	return diff > emailExpirySecondsTimeout
 }

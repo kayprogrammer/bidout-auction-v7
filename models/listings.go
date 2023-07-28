@@ -146,7 +146,7 @@ func (listing *Listing) BeforeSave(tx *gorm.DB) (err error) {
 		randomStr := utils.GetRandomString(4)
 		newSlug := fmt.Sprintf("%s-%s", *listing.Slug, randomStr)
 		listing.Slug = &newSlug
-	}	
+	}
 	return
 }
 
