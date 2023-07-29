@@ -1,12 +1,13 @@
 package routes
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
 	"gorm.io/gorm"
-
 )
 
 // @Summary Retrieve site details
@@ -19,7 +20,7 @@ func GetSiteDetails(c *fiber.Ctx) error {
 	var sitedetail models.SiteDetail
 
 	db.FirstOrCreate(&sitedetail, &sitedetail)
-
+	log.Println(sitedetail)
 	responseSiteDetail := schemas.SiteDetailResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Site Details Fetched!"}.Init(),
 		Data:           sitedetail,

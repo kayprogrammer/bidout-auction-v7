@@ -16,8 +16,56 @@ import (
 	"gorm.io/gorm"
 )
 
+func CreateTables(db *gorm.DB) {
+	// Create Tables
+	db.AutoMigrate(
+		// base
+		&models.File{}, 
+		
+		// general
+		&models.SiteDetail{}, 
+		&models.Subscriber{}, 
+		&models.Review{}, 
+
+		// accounts
+		&models.User{}, 
+		&models.Jwt{}, 
+		&models.Otp{},
+
+		// listings
+		&models.Category{}, 
+		&models.Listing{}, 
+		&models.Bid{},
+		&models.Watchlist{},
+	)
+}
+
+func DropTables(db *gorm.DB) {
+	// Drop Tables
+	db.Migrator().DropTable(
+		// base
+		&models.File{}, 
+		
+		// general
+		&models.SiteDetail{}, 
+		&models.Subscriber{}, 
+		&models.Review{}, 
+
+		// accounts
+		&models.User{}, 
+		&models.Jwt{}, 
+		&models.Otp{},
+
+		// listings
+		&models.Category{}, 
+		&models.Listing{}, 
+		&models.Bid{},
+		&models.Watchlist{},
+	)
+}
+
 func waitForDBConnection(t *testing.T, dsn string) *gorm.DB {
-	maxRetries := 10 // Number of retries to wait for the database to be ready
+	maxRetries := 3 // Number of retries to wait for the database to be ready
 	var db *gorm.DB
 	var err error
 
@@ -39,41 +87,17 @@ func waitForDBConnection(t *testing.T, dsn string) *gorm.DB {
     if result.Error != nil {
         log.Fatal("failed to create extension: " + result.Error.Error())
     }
-
-	// Migrations
-	db.AutoMigrate(
-		// base
-		&models.File{}, 
-		
-		// general
-		&models.SiteDetail{}, 
-		&models.Subscriber{}, 
-		&models.Review{}, 
-
-		// accounts
-		&models.User{}, 
-		&models.Jwt{}, 
-		&models.Otp{},
-
-		// listings
-		&models.Category{}, 
-		&models.Listing{}, 
-		&models.Bid{},
-		&models.Watchlist{},
-	)
-
 	return db
 }
 
 func SetupTestDatabase(t *testing.T) *gorm.DB {
 	cfg := config.GetConfig()
-	MockedDB(CREATE)
     dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
 		cfg.PostgresServer,
 		cfg.PostgresUser,
 		cfg.PostgresPassword,
-		"bidout_auction_v7_by_kayprogrammer_test_db",
+		cfg.TestPostgresDB,
 		cfg.PostgresPort,
 		"disable",
 		"UTC",
@@ -81,7 +105,7 @@ func SetupTestDatabase(t *testing.T) *gorm.DB {
 	return waitForDBConnection(t, dsn)
 }
 
-func closeTestDatabase(db *gorm.DB) {
+func CloseTestDatabase(db *gorm.DB) {
     sqlDB, err := db.DB()
     if err != nil {
         log.Fatal("Failed to get database connection: " + err.Error())
@@ -94,7 +118,6 @@ func closeTestDatabase(db *gorm.DB) {
 func Setup(t *testing.T, app *fiber.App) *gorm.DB {
 	// Set up the test database
 	db := SetupTestDatabase(t)
-	defer closeTestDatabase(db)
 
 	// Inject your test database into the Fiber app's context
 	app.Use(func(c *fiber.Ctx) error {
@@ -102,6 +125,7 @@ func Setup(t *testing.T, app *fiber.App) *gorm.DB {
 		return c.Next()
 	})
 	routes.SetupRoutes(app)
+	CreateTables(db)
 	return db
 }
 
@@ -115,3 +139,4 @@ func ParseResponseBody(t *testing.T, b io.ReadCloser) interface{} {
     }
 	return responseBody
 }
+

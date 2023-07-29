@@ -7,15 +7,16 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/stretchr/testify/assert"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
+	"github.com/stretchr/testify/assert"
 )
 
 var BASEURL = "/api/v7/general"
+
 func TestGetSiteDetails(t *testing.T) {
 	app := fiber.New()
-	_ = Setup(t, app)
-	
+	db := Setup(t, app)
+
 	url := fmt.Sprintf("%s/site-detail", BASEURL)
 	req := httptest.NewRequest("GET", url, nil)
 	res, _ := app.Test(req)
@@ -30,5 +31,8 @@ func TestGetSiteDetails(t *testing.T) {
 	assert.Equal(t, body["message"], "Site Details Fetched!")
 	dataKeys := []string{"address", "email", "fb", "ig", "name", "phone", "tw", "wh"}
 	assert.Equal(t, utils.KeysExistInMap(dataKeys, body["data"].(map[string]interface{})), true)
-	MockedDB(DROP)
+	
+	// Drop Tables and Close Connectiom
+	DropTables(db)
+	CloseTestDatabase(db)
 }

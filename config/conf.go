@@ -35,6 +35,7 @@ type Configuration struct {
 	PostgresServer            string
 	PostgresPort              string
 	PostgresDB                string
+	TestPostgresDB			  string
 	MailSenderEmail           string
 	MailSenderPassword        string
 	MailSenderHost            string
@@ -86,6 +87,7 @@ func init() {
 		PostgresServer:            os.Getenv("POSTGRES_SERVER"),
 		PostgresPort:              os.Getenv("POSTGRES_PORT"),
 		PostgresDB:                os.Getenv("POSTGRES_DB"),
+		TestPostgresDB:            os.Getenv("TEST_POSTGRES_DB"),
 		MailSenderEmail:           os.Getenv("MAIL_SENDER_EMAIL"),
 		MailSenderPassword:        os.Getenv("MAIL_SENDER_PASSWORD"),
 		MailSenderHost:            os.Getenv("MAIL_SENDER_HOST"),
