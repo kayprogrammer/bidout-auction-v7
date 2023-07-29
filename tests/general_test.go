@@ -1,32 +1,34 @@
 package tests
 
 import (
-	"net/http"
+	"fmt"
+	"log"
 	"net/http/httptest"
 	"testing"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/stretchr/testify/assert"
+	"github.com/kayprogrammer/bidout-auction-v7/utils"
 )
 
-func TestHelloHandler(t *testing.T) {
+var BASEURL = "/api/v7/general"
+func TestGetSiteDetails(t *testing.T) {
 	app := fiber.New()
+	_ = Setup(t, app)
+	
+	url := fmt.Sprintf("%s/site-detail", BASEURL)
+	req := httptest.NewRequest("GET", url, nil)
+	res, _ := app.Test(req)
 
-	// Set up a test request to the "/" route
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	// Assert Status code
+	assert.Equal(t, res.StatusCode, 200)
 
-	// Create a response recorder to capture the response
-	res := httptest.NewRecorder()
-
-	// Pass the request and response recorder to the app handler
-	app.ServeHTTP(res, req)
-
-	// Check the response status code
-	if res.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, but got %d", http.StatusOK, res.Code)
-	}
-
-	// Check the response body
-	expectedBody := "Hello, World!"
-	if res.Body.String() != expectedBody {
-		t.Errorf("Expected response body '%s', but got '%s'", expectedBody, res.Body.String())
-	}
+	// Parse and assert body
+	body := ParseResponseBody(t, res.Body).(map[string]interface{})
+	log.Println(body)
+	assert.Equal(t, body["status"], "success")
+	assert.Equal(t, body["message"], "Site Details Fetched!")
+	dataKeys := []string{"address", "email", "fb", "ig", "name", "phone", "tw", "wh"}
+	assert.Equal(t, utils.KeysExistInMap(dataKeys, body["data"].(map[string]interface{})), true)
+	MockedDB(DROP)
 }

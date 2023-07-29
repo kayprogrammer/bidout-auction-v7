@@ -5,6 +5,8 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -44,9 +46,16 @@ var config *Configuration
 
 func init() {
 	// Load environment variables from the .env file (if it exists) into the environment
-	err := godotenv.Load()
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Println("Unable to identify current directory (needed to load .env)", os.Stderr)
+		os.Exit(1)
+	}
+	basepath := filepath.Dir(file)
+	err := godotenv.Load(filepath.Join(basepath, "../.env"))
+
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error loading .env file: ", err)
 	}
 
 	// Convert string-based numeric variables to their respective types
