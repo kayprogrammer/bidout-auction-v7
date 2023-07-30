@@ -1,14 +1,18 @@
 package senders
 
 import (
-	"log"
 	"bytes"
-	"os"
+	"fmt"
 	"html/template"
-	"gopkg.in/gomail.v2"
-	uuid "github.com/satori/go.uuid"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
+
 	"github.com/kayprogrammer/bidout-auction-v7/config"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
+	uuid "github.com/satori/go.uuid"
+	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
 
@@ -81,7 +85,14 @@ func SendEmail(db *gorm.DB, user models.User, emailType string) {
 	}
 
 	// Read the HTML file content
-	htmlContent, err := os.ReadFile(templateFile.(string))
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Println("Unable to identify current directory (needed to load templates)", os.Stderr)
+		os.Exit(1)
+	}
+	basepath := filepath.Dir(file)
+	tempfile := fmt.Sprintf("../%s", templateFile.(string))
+	htmlContent, err := os.ReadFile(filepath.Join(basepath, tempfile))
 	if err != nil {
 		log.Fatal("Error reading HTML file:", err)
 	}

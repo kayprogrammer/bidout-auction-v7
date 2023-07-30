@@ -1,17 +1,21 @@
 package tests
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"testing"
 	"time"
 	"io"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/config"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/routes"
+	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -62,6 +66,14 @@ func DropTables(db *gorm.DB) {
 		&models.Bid{},
 		&models.Watchlist{},
 	)
+}
+
+func CreateSingleTable(db *gorm.DB, model interface{}) {
+	db.AutoMigrate(&model)
+}
+
+func DropSingleTable(db *gorm.DB, model interface{}) {
+	db.Migrator().DropTable(&model)
 }
 
 func waitForDBConnection(t *testing.T, dsn string) *gorm.DB {
@@ -125,6 +137,7 @@ func Setup(t *testing.T, app *fiber.App) *gorm.DB {
 		return c.Next()
 	})
 	routes.SetupRoutes(app)
+	DropTables(db)
 	CreateTables(db)
 	return db
 }
@@ -140,3 +153,17 @@ func ParseResponseBody(t *testing.T, b io.ReadCloser) interface{} {
 	return responseBody
 }
 
+
+func ProcessTestBody(t *testing.T, app *fiber.App, url string, method string, body interface{} ) *http.Response {
+	// Marshal the test data to JSON
+	requestBytes, err := json.Marshal(body)
+	requestBody := bytes.NewReader(requestBytes)
+	assert.Nil(t, err)
+	req := httptest.NewRequest(method, url, requestBody)
+	req.Header.Set("Content-Type", "application/json")
+	res, err := app.Test(req)
+	if err != nil {
+		log.Println(err)
+	}
+	return res
+}

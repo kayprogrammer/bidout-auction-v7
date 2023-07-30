@@ -15,6 +15,14 @@ import (
 
 var truth = true
 
+type EmailSender struct{}
+
+func (es *EmailSender) SendEmail(db *gorm.DB, user models.User, emailType string) {
+    // Implementation of sending an actual email using your preferred email library.
+    // Replace this with your real email sending code.
+    senders.SendEmail(db, user, emailType)
+}
+
 // @Summary Register a new user
 // @Description This endpoint registers new users into our application.
 // @Tags Auth
@@ -46,13 +54,14 @@ func Register(c *fiber.Ctx) error {
 	db.Create(&user)
 
 	// Send Email
-	go senders.SendEmail(db, user, "activate")
+	emailSender := &EmailSender{}
+	go emailSender.SendEmail(db, user, "activate")
 
 	response := schemas.RegisterResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Registration successful"}.Init(),
 		Data:           schemas.EmailRequestSchema{Email: user.Email},
 	}
-	return c.Status(200).JSON(response)
+	return c.Status(201).JSON(response)
 }
 
 // @Summary Verify a user's email
@@ -100,7 +109,8 @@ func VerifyEmail(c *fiber.Ctx) error {
 	db.Save(&user)
 
 	// Send Welcome Email
-	go senders.SendEmail(db, user, "welcome")
+	emailSender := &EmailSender{}
+	go emailSender.SendEmail(db, user, "welcome")
 
 	response := schemas.ResponseSchema{Message: "Account verification successful"}.Init()
 	return c.Status(200).JSON(response)
@@ -137,7 +147,8 @@ func ResendVerificationEmail(c *fiber.Ctx) error {
 	}
 
 	// Send Email
-	go senders.SendEmail(db, user, "activate")
+	emailSender := &EmailSender{}
+	go emailSender.SendEmail(db, user, "activate")
 
 	response := schemas.ResponseSchema{Message: "Verification email sent"}.Init()
 	return c.Status(200).JSON(response)

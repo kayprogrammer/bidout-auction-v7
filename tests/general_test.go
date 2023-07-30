@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http/httptest"
@@ -14,11 +13,9 @@ import (
 	"gorm.io/gorm"
 )
 
-var BASEURL = "/api/v7/general"
-
-func getSiteDetails(t *testing.T, app *fiber.App, db *gorm.DB) {
-	t.Run("getSiteDetails", func(t *testing.T) {
-		url := fmt.Sprintf("%s/site-detail", BASEURL)
+func getSiteDetails(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	t.Run("Get Site Details", func(t *testing.T) {
+		url := fmt.Sprintf("%s/site-detail", baseUrl)
 		req := httptest.NewRequest("GET", url, nil)
 		res, _ := app.Test(req)
 
@@ -34,19 +31,13 @@ func getSiteDetails(t *testing.T, app *fiber.App, db *gorm.DB) {
 	})
 }
 
-func subscribe(t *testing.T, app *fiber.App, db *gorm.DB) {
-	t.Run("subscribe", func(t *testing.T) {
-		url := fmt.Sprintf("%s/subscribe", BASEURL)
+func subscribe(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	t.Run("Subscribe", func(t *testing.T) {
+		url := fmt.Sprintf("%s/subscribe", baseUrl)
 		validEmail := "test_subscriber@email.com"
 		emailData := models.Subscriber{Email: validEmail}
 
-		// Marshal the test data to JSON
-		requestBytes, err := json.Marshal(emailData)
-		requestBody := bytes.NewReader(requestBytes)
-		assert.Nil(t, err)
-		req := httptest.NewRequest("POST", url, requestBody)
-		req.Header.Set("Content-Type", "application/json")
-		res, _ := app.Test(req)
+		res := ProcessTestBody(t, app, url, "POST", emailData)
 
 		// Assert Status code
 		assert.Equal(t, res.StatusCode, 200)
@@ -61,10 +52,10 @@ func subscribe(t *testing.T, app *fiber.App, db *gorm.DB) {
 	})
 }
 
-func getReviews(t *testing.T, app *fiber.App, db *gorm.DB) {
-	t.Run("getReviews", func(t *testing.T) {
+func getReviews(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	t.Run("Get Reviews", func(t *testing.T) {
 		reviewText := "This is a nice new platform"
-		url := fmt.Sprintf("%s/reviews", BASEURL)
+		url := fmt.Sprintf("%s/reviews", baseUrl)
 
 		// Create Review
 		reviewer := CreateTestUser(db)
@@ -101,11 +92,12 @@ func getReviews(t *testing.T, app *fiber.App, db *gorm.DB) {
 func TestGeneral(t *testing.T) {
 	app := fiber.New()
 	db := Setup(t, app)
+	BASEURL := "/api/v7/general"
 
 	// Run General Endpoint Tests
-	getSiteDetails(t, app, db)
-	subscribe(t, app, db)
-	getReviews(t, app, db)
+	getSiteDetails(t, app, db, BASEURL)
+	subscribe(t, app, db, BASEURL)
+	getReviews(t, app, db, BASEURL)
 
 	// Drop Tables and Close Connectiom
 	DropTables(db)
