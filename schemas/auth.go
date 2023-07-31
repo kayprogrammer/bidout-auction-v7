@@ -9,6 +9,10 @@ type VerifyEmailRequestSchema struct {
 	Otp					int					`json:"otp" validate:"required" example:"123456"`
 }
 
+type SetNewPasswordSchema struct {
+	VerifyEmailRequestSchema
+	Password			string				`json:"password" validate:"required,min=8,max=50" example:"newstrongpassword"`
+}
 
 type RegisterResponseSchema struct {
 	ResponseSchema

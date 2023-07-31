@@ -117,8 +117,8 @@ func VerifyEmail(c *fiber.Ctx) error {
 }
 
 
-// @Summary Verify a user's email
-// @Description This endpoint verifies a user's email.
+// @Summary Resend Verification Email
+// @Description This endpoint resends new otp to the user's email.
 // @Tags Auth
 // @Param email body schemas.EmailRequestSchema true "Email object"
 // @Success 200 {object} schemas.ResponseSchema
@@ -151,5 +151,87 @@ func ResendVerificationEmail(c *fiber.Ctx) error {
 	go emailSender.SendEmail(db, user, "activate")
 
 	response := schemas.ResponseSchema{Message: "Verification email sent"}.Init()
+	return c.Status(200).JSON(response)
+}
+
+// @Summary Send Password Reset Otp
+// @Description This endpoint sends new password reset otp to the user's email.
+// @Tags Auth
+// @Param email body schemas.EmailRequestSchema true "Email object"
+// @Success 200 {object} schemas.ResponseSchema
+// @Failure 422 {object} utils.ErrorResponse
+// @Failure 404 {object} utils.ErrorResponse
+// @Router /api/v7/auth/send-password-reset-otp [post]
+func SendPasswordResetOtp(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	validator := utils.Validator()
+
+	emailSchema := schemas.EmailRequestSchema{}
+	c.BodyParser(&emailSchema)
+
+	// Validate request
+	if err := validator.Validate(emailSchema); err != nil {
+		return c.Status(422).JSON(err)
+	}
+
+	user := models.User{}
+	db.Find(&user,"email = ?", emailSchema.Email)
+	if user.ID == uuid.Nil {
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
+	}
+
+	// Send Email
+	emailSender := &EmailSender{}
+	go emailSender.SendEmail(db, user, "reset")
+
+	response := schemas.ResponseSchema{Message: "Password otp sent"}.Init()
+	return c.Status(200).JSON(response)
+}
+
+// @Summary Set New Password
+// @Description This endpoint verifies the password reset otp.
+// @Tags Auth
+// @Param email body schemas.SetNewPasswordSchema true "Password reset object"
+// @Success 200 {object} schemas.ResponseSchema
+// @Failure 422 {object} utils.ErrorResponse
+// @Failure 404 {object} utils.ErrorResponse
+// @Router /api/v7/auth/set-new-password [post]
+func SetNewPassword(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	validator := utils.Validator()
+
+	passwordResetSchema := schemas.SetNewPasswordSchema{}
+	c.BodyParser(&passwordResetSchema)
+
+	// Validate request
+	if err := validator.Validate(passwordResetSchema); err != nil {
+		return c.Status(422).JSON(err)
+	}
+
+	user := models.User{}
+	db.Find(&user,"email = ?", passwordResetSchema.Email)
+	if user.ID == uuid.Nil {
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
+	}
+
+	otp := models.Otp{}
+	db.Find(&otp,"user_id = ?", user.ID)
+	if otp.ID == uuid.Nil || *otp.Code !=  passwordResetSchema.Otp {
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Otp"}.Init())
+	}
+
+	if otp.CheckExpiration() {
+		return c.Status(400).JSON(utils.ErrorResponse{Message: "Expired Otp"}.Init())
+	}
+
+	// Set Password
+	user.Password = passwordResetSchema.Password
+	db.Save(&user)
+
+	// Send Email
+	emailSender := &EmailSender{}
+	go emailSender.SendEmail(db, user, "reset-success")
+
+	response := schemas.ResponseSchema{Message: "Password reset successful"}.Init()
 	return c.Status(200).JSON(response)
 }
