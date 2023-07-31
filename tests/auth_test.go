@@ -151,6 +151,98 @@ func resendVerificationEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl 
 	})
 }
 
+func sendPasswordResetOtp(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	t.Run("Send Password Reset Otp", func(t *testing.T) {
+
+		user := CreateTestVerifiedUser(db)
+
+		url := fmt.Sprintf("%s/send-password-reset-otp", baseUrl)
+		emailData := schemas.EmailRequestSchema{
+			Email: user.Email,
+		}
+
+		emailSenderMock := new(MockEmailSender)
+		emailSenderMock.On("sendEmail", db, user, "reset").Return(nil)
+
+		res := ProcessTestBody(t, app, url, "POST", emailData)
+
+		// Verify that an unverified user can get a new email
+		// Assert Status code
+		assert.Equal(t, res.StatusCode, 200)
+
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, body["status"], "success")
+		assert.Equal(t, body["message"], "Password otp sent")
+
+		// Verify that an error is raised when attempting to send password reset email for a user that doesn't exist
+		emailData.Email = "invalid@example.com"
+		res = ProcessTestBody(t, app, url, "POST", emailData)
+		
+		assert.Equal(t, res.StatusCode, 404)
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, body["status"], "failure")
+		assert.Equal(t, body["message"], "Incorrect Email")
+	})
+}
+
+func setNewPassword(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	// Drop and Create User Table since the previous test uses the verified_user it...
+	DropSingleTable(db, models.User{})
+	CreateSingleTable(db, models.User{})
+
+	t.Run("Set New Password", func(t *testing.T) {
+		user := CreateTestVerifiedUser(db)
+
+		url := fmt.Sprintf("%s/set-new-password", baseUrl)
+		passwordResetData := schemas.SetNewPasswordSchema{
+			VerifyEmailRequestSchema: schemas.VerifyEmailRequestSchema{
+				Email: "invalid@example.com", // Invalid otp
+				Otp: 11111, // Invalid otp
+			},
+			Password: "newpassword",
+		}
+
+		emailSenderMock := new(MockEmailSender)
+		emailSenderMock.On("sendEmail", db, user, "reset-success").Return(nil)
+
+		res := ProcessTestBody(t, app, url, "POST", passwordResetData)
+
+		// Verify that the request fails with incorrect email
+		// Assert Status code
+		assert.Equal(t, res.StatusCode, 404)
+
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, body["status"], "failure")
+		assert.Equal(t, body["message"], "Incorrect Email")
+
+		// Verify that the request fails with incorrect otp
+		passwordResetData.Email = user.Email
+		res = ProcessTestBody(t, app, url, "POST", passwordResetData)
+		// Assert Status code
+		assert.Equal(t, res.StatusCode, 404)
+
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, body["status"], "failure")
+		assert.Equal(t, body["message"], "Incorrect Otp")
+
+		// Verify that password reset succeeds
+		realOtp := models.Otp{UserId: user.ID}
+		db.Create(&realOtp)
+		passwordResetData.Otp = *realOtp.Code
+		res = ProcessTestBody(t, app, url, "POST", passwordResetData)
+
+		// Assert response
+		assert.Equal(t, res.StatusCode, 200)
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, body["status"], "success")
+		assert.Equal(t, body["message"], "Password reset successful")
+	})
+}
 
 func TestAuth(t *testing.T) {
 	app := fiber.New()
@@ -161,6 +253,8 @@ func TestAuth(t *testing.T) {
 	register(t, app, db, BASEURL)
 	verifyEmail(t, app, db, BASEURL)
 	resendVerificationEmail(t, app, db, BASEURL)
+	sendPasswordResetOtp(t, app, db, BASEURL)
+	setNewPassword(t, app, db, BASEURL)
 
 	// Drop Tables and Close Connectiom
 	CloseTestDatabase(db)
