@@ -9,11 +9,13 @@ import (
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/senders"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
+	"github.com/kayprogrammer/bidout-auction-v7/utils/auth"
 	"gorm.io/gorm"
 
 )
 
 var truth = true
+var falsy = false
 
 type EmailSender struct{}
 
@@ -234,4 +236,96 @@ func SetNewPassword(c *fiber.Ctx) error {
 
 	response := schemas.ResponseSchema{Message: "Password reset successful"}.Init()
 	return c.Status(200).JSON(response)
+}
+
+// @Summary Login a user
+// @Description This endpoint generates new access and refresh tokens for authentication
+// @Tags Auth
+// @Param user body schemas.LoginSchema true "User login object"
+// @Success 201 {object} schemas.ResponseSchema
+// @Failure 422 {object} utils.ErrorResponse
+// @Failure 401 {object} utils.ErrorResponse
+// @Router /api/v7/auth/login [post]
+func Login(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	validator := utils.Validator()
+
+	userLoginSchema := schemas.LoginSchema{}
+	c.BodyParser(&userLoginSchema)
+
+	// Validate request
+	if err := validator.Validate(userLoginSchema); err != nil {
+		return c.Status(422).JSON(err)
+	}
+
+	user := models.User{}
+	db.Find(&user,"email = ?", userLoginSchema.Email)
+	if user.ID == uuid.Nil {
+		return c.Status(401).JSON(utils.ErrorResponse{Message: "Invalid Credentials"}.Init())
+	}
+	if !utils.CheckPasswordHash(userLoginSchema.Password, user.Password) {
+		return c.Status(401).JSON(utils.ErrorResponse{Message: "Invalid Credentials"}.Init())
+	}
+
+	if user.IsEmailVerified == &falsy {
+		return c.Status(401).JSON(utils.ErrorResponse{Message:"Verify your email first"}.Init())
+	}
+
+	// Create Auth Tokens
+	access := auth.GenerateAccessToken(user.ID)
+	refresh := auth.GenerateRefreshToken()
+	jwt := models.Jwt{UserId: user.ID, Access: access, Refresh: refresh}
+	db.Create(&jwt)
+
+	response := schemas.LoginResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Login successful"}.Init(),
+		Data:           schemas.TokensResponseSchema{Access: access, Refresh: refresh},
+	}
+	return c.Status(201).JSON(response)
+}
+
+// @Summary Refresh tokens
+// @Description This endpoint refresh tokens by generating new access and refresh tokens for a user
+// @Tags Auth
+// @Param refresh body schemas.RefreshTokenSchema true "Refresh token object"
+// @Success 201 {object} schemas.ResponseSchema
+// @Failure 422 {object} utils.ErrorResponse
+// @Failure 404 {object} utils.ErrorResponse
+// @Failure 401 {object} utils.ErrorResponse
+// @Router /api/v7/auth/refresh [post]
+func Refresh(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	validator := utils.Validator()
+
+	refreshTokenSchema := schemas.RefreshTokenSchema{}
+	c.BodyParser(&refreshTokenSchema)
+
+	// Validate request
+	if err := validator.Validate(refreshTokenSchema); err != nil {
+		return c.Status(422).JSON(err)
+	}
+
+	token := refreshTokenSchema.Refresh
+	jwt := models.Jwt{}
+	db.Find(&jwt,"refresh = ?", token)
+	if jwt.ID == uuid.Nil {
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Refresh token does not exist"}.Init())
+	}
+
+	if !auth.DecodeRefreshToken(token) {
+		return c.Status(401).JSON(utils.ErrorResponse{Message: "Refresh token is invalid or expired"}.Init())
+	}
+
+	// Create and Update Auth Tokens
+	access := auth.GenerateAccessToken(jwt.UserId)
+	refresh := auth.GenerateRefreshToken()
+	jwt.Access = access
+	jwt.Refresh = refresh
+	db.Save(&jwt)
+
+	response := schemas.LoginResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Tokens refresh successful"}.Init(),
+		Data:           schemas.TokensResponseSchema{Access: access, Refresh: refresh},
+	}
+	return c.Status(201).JSON(response)
 }
