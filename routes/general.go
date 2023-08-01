@@ -8,6 +8,7 @@ import (
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // @Summary Retrieve site details
@@ -68,7 +69,7 @@ func GetReviews(c *fiber.Ctx) error {
 	reviews := []models.Review{}
 
 	// Get reviews
-	db.Where(models.Review{Show: true}).Find(&reviews)
+	db.Preload(clause.Associations).Where(models.Review{Show: true}).Find(&reviews)
 
 	// Initialize each review object in the slice
 	for i := range reviews {

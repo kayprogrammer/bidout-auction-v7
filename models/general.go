@@ -40,12 +40,10 @@ type Review struct {
 }
 
 func (obj Review) Init(db *gorm.DB) Review{
-	reviewer := User{}
-	db.Find(&reviewer,"id = ?", obj.ReviewerId)
-	name := reviewer.FullName()
+	name := obj.ReviewerObj.FullName()
 	obj.Reviewer.Name = name
 
-	avatarId := reviewer.AvatarId
+	avatarId := obj.ReviewerObj.AvatarId
 	if avatarId != nil {
 		avatar := File{}
 		db.Find(&avatar,"id = ?", avatarId)

@@ -9,7 +9,7 @@ import (
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/senders"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
-	"github.com/kayprogrammer/bidout-auction-v7/utils/auth"
+	auth "github.com/kayprogrammer/bidout-auction-v7/authentication"
 	"gorm.io/gorm"
 
 )
@@ -329,4 +329,21 @@ func Refresh(c *fiber.Ctx) error {
 		Data:           schemas.TokensResponseSchema{Access: access, Refresh: refresh},
 	}
 	return c.Status(201).JSON(response)
+}
+
+// @Summary Logout a user
+// @Description This endpoint logs a user out from our application
+// @Tags Auth
+// @Success 200 {object} schemas.ResponseSchema
+// @Failure 401 {object} utils.ErrorResponse
+// @Router /api/v7/auth/logout [get]
+// @Security BearerAuth
+func Logout(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	user := c.Locals("user").(*models.User)
+
+	db.Where("user_id = ?", user.ID).Delete(&models.Jwt{}) // Delete jwt
+	
+	response := schemas.ResponseSchema{Message: "Logout successful"}.Init()
+	return c.Status(200).JSON(response)
 }

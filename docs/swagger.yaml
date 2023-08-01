@@ -229,6 +229,23 @@ paths:
       summary: Login a user
       tags:
       - Auth
+  /api/v7/auth/logout:
+    get:
+      description: This endpoint logs a user out from our application
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ResponseSchema'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout a user
+      tags:
+      - Auth
   /api/v7/auth/refresh:
     post:
       description: This endpoint refresh tokens by generating new access and refresh
@@ -424,4 +441,10 @@ paths:
       - General
 produces:
 - application/json
+securityDefinitions:
+  BearerAuth:
+    description: '"Type ''Bearer jwt_string'' to correctly set the API Key"'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

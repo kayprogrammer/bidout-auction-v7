@@ -16,6 +16,11 @@ import (
 // @description A simple bidding API built with Fiber
 // @Accept json
 // @Produce json
+// @Security BearerAuth
+// @securityDefinitions.apikey BearerAuth 
+// @in header 
+// @name Authorization 
+// @description "Type 'Bearer jwt_string' to correctly set the API Key"
 func main() {
 	database.ConnectDb()
 	db := database.Database.Db
