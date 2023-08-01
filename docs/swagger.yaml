@@ -207,7 +207,7 @@ paths:
     post:
       description: This endpoint generates new access and refresh tokens for authentication
       parameters:
-      - description: User login object
+      - description: User login
         in: body
         name: user
         required: true
@@ -234,7 +234,7 @@ paths:
       description: This endpoint refresh tokens by generating new access and refresh
         tokens for a user
       parameters:
-      - description: Refresh token object
+      - description: Refresh token
         in: body
         name: refresh
         required: true

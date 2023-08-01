@@ -241,7 +241,7 @@ func SetNewPassword(c *fiber.Ctx) error {
 // @Summary Login a user
 // @Description This endpoint generates new access and refresh tokens for authentication
 // @Tags Auth
-// @Param user body schemas.LoginSchema true "User login object"
+// @Param user body schemas.LoginSchema true "User login"
 // @Success 201 {object} schemas.ResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 401 {object} utils.ErrorResponse
@@ -275,6 +275,7 @@ func Login(c *fiber.Ctx) error {
 	access := auth.GenerateAccessToken(user.ID)
 	refresh := auth.GenerateRefreshToken()
 	jwt := models.Jwt{UserId: user.ID, Access: access, Refresh: refresh}
+	db.Where("user_id = ?", user.ID).Delete(&models.Jwt{}) // Delete existing jwt
 	db.Create(&jwt)
 
 	response := schemas.LoginResponseSchema{
@@ -287,7 +288,7 @@ func Login(c *fiber.Ctx) error {
 // @Summary Refresh tokens
 // @Description This endpoint refresh tokens by generating new access and refresh tokens for a user
 // @Tags Auth
-// @Param refresh body schemas.RefreshTokenSchema true "Refresh token object"
+// @Param refresh body schemas.RefreshTokenSchema true "Refresh token"
 // @Success 201 {object} schemas.ResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 404 {object} utils.ErrorResponse

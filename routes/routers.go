@@ -22,6 +22,8 @@ func SetupRoutes(app *fiber.App) {
 	authRouter.Post("/resend-verification-email", ResendVerificationEmail)
 	authRouter.Post("/send-password-reset-otp", SendPasswordResetOtp)
 	authRouter.Post("/set-new-password", SetNewPassword)
+	authRouter.Post("/login", Login)
+	authRouter.Post("/refresh", Refresh)
 
 	// // Listings Routes
 	// listingsRouter := api.Group("/listings")

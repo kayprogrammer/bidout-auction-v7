@@ -31,7 +31,7 @@ const docTemplate = `{
                 "summary": "Login a user",
                 "parameters": [
                     {
-                        "description": "User login object",
+                        "description": "User login",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -71,7 +71,7 @@ const docTemplate = `{
                 "summary": "Refresh tokens",
                 "parameters": [
                     {
-                        "description": "Refresh token object",
+                        "description": "Refresh token",
                         "name": "refresh",
                         "in": "body",
                         "required": true,
