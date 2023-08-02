@@ -16,7 +16,7 @@ type User struct {
 	BaseModel
 	FirstName				string			`json:"first_name" gorm:"type: varchar(50);not null" validate:"required,max=50" example:"John"`
 	LastName				string			`json:"last_name" gorm:"type: varchar(50);not null" validate:"required,max=50" example:"Doe"`
-	Email					string			`json:"email" gorm:"not null" validate:"required,min=5,email" example:"johndoe@email.com"`
+	Email					string			`json:"email" gorm:"not null;unique;" validate:"required,min=5,email" example:"johndoe@email.com"`
 	Password				string			`json:"password" gorm:"not null" validate:"required,min=8,max=50" example:"strongpassword"`
 	IsEmailVerified			*bool			`json:"is_email_verified" gorm:"default:false" swaggerignore:"true"`
 	IsSuperuser				*bool			`json:"is_superuser" gorm:"default:false" swaggerignore:"true"`

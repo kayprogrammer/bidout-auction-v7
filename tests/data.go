@@ -2,7 +2,9 @@ package tests
 
 import (
 	"github.com/kayprogrammer/bidout-auction-v7/models"
+	auth "github.com/kayprogrammer/bidout-auction-v7/authentication"
 	"gorm.io/gorm"
+	uuid "github.com/satori/go.uuid"
 )
 
 var truth = true
@@ -40,4 +42,12 @@ func CreateAnotherTestVerifiedUser(db *gorm.DB) models.User {
 	}
 	db.Create(&user)
 	return user
+}
+
+func CreateJwt(db *gorm.DB, userId uuid.UUID) models.Jwt {
+	access := auth.GenerateAccessToken(userId)
+	refresh := auth.GenerateRefreshToken()
+	jwt := models.Jwt{UserId: userId, Access: access, Refresh: refresh}
+	db.Create(&jwt)
+	return jwt
 }

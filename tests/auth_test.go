@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"testing"
 	"encoding/json"
+	"net/http/httptest"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
+	auth "github.com/kayprogrammer/bidout-auction-v7/authentication"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
@@ -298,6 +300,100 @@ func login(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 	})
 }
 
+func refresh(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	// Drop and Create User Table since the previous test uses the verified_user it...
+	DropSingleTable(db, models.User{})
+	CreateSingleTable(db, models.User{})
+
+	t.Run("Refresh", func(t *testing.T) {
+		user := CreateTestVerifiedUser(db)
+
+		url := fmt.Sprintf("%s/refresh", baseUrl)
+		refreshTokenData := schemas.RefreshTokenSchema{
+			Refresh: "invalid@example.com", // non-exisitent token
+		}
+
+		res := ProcessTestBody(t, app, url, "POST", refreshTokenData)
+
+		// # Test for invalid refresh token (not found)
+		// Assert Status code
+		assert.Equal(t, 404, res.StatusCode)
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Refresh token does not exist", body["message"])
+
+		// Test for invalid refresh token (invalid or expired)
+		jwt := models.Jwt{UserId: user.ID, Access: "invalid_access", Refresh: "invalid_refresh"}
+		db.Create(&jwt)
+		refreshTokenData.Refresh = jwt.Refresh
+		res = ProcessTestBody(t, app, url, "POST", refreshTokenData)
+		// Assert Status code
+		assert.Equal(t, 401, res.StatusCode)
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Refresh token is invalid or expired", body["message"])
+
+		// Test for valid refresh token
+		jwt.Refresh = auth.GenerateRefreshToken()
+		db.Save(&jwt)
+		refreshTokenData.Refresh = jwt.Refresh
+		res = ProcessTestBody(t, app, url, "POST", refreshTokenData)
+		// Assert response
+		assert.Equal(t, 201, res.StatusCode)
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Tokens refresh successful", body["message"])
+		jwt = models.Jwt{}
+		db.Find(&jwt,"user_id = ?", user.ID)
+		expectedData := map[string]string{
+			"access": jwt.Access,
+			"refresh": jwt.Refresh,
+		}
+		data, _ := json.Marshal(body["data"])
+		expectedDataJson, _ := json.Marshal(expectedData)
+		assert.Equal(t, expectedDataJson, data)
+	})
+}
+
+func logout(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	// Drop and Create User Table since the previous test uses the verified_user it...
+	DropSingleTable(db, models.User{})
+	CreateSingleTable(db, models.User{})
+	t.Run("Logout", func(t *testing.T) {
+		url := fmt.Sprintf("%s/logout", baseUrl)
+		req := httptest.NewRequest("GET", url, nil)
+		req.Header.Set("Authorization", "Bearer invalid_token")
+		res, _ := app.Test(req)
+
+		// Ensures an unauthorized user cannot log out
+		// Assert Status code
+		assert.Equal(t, 401, res.StatusCode)
+
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Auth Token is Invalid or Expired!", body["message"])
+
+		// Ensures an authorized user can log out
+		req = httptest.NewRequest("GET", url, nil)
+		user := CreateTestVerifiedUser(db)
+		jwt := CreateJwt(db, user.ID)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", jwt.Access))
+		res, _ = app.Test(req)
+
+		// Assert Status code
+		assert.Equal(t, 200, res.StatusCode)
+
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Logout successful", body["message"])
+	})
+}
+
 func TestAuth(t *testing.T) {
 	app := fiber.New()
 	db := Setup(t, app)
@@ -310,6 +406,8 @@ func TestAuth(t *testing.T) {
 	sendPasswordResetOtp(t, app, db, BASEURL)
 	setNewPassword(t, app, db, BASEURL)
 	login(t, app, db, BASEURL)
+	logout(t, app, db, BASEURL)
+	refresh(t, app, db, BASEURL)
 
 	// Drop Tables and Close Connectiom
 	CloseTestDatabase(db)
