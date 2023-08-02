@@ -20,14 +20,14 @@ func getSiteDetails(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		res, _ := app.Test(req)
 
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 200)
+		assert.Equal(t, 200, res.StatusCode)
 
 		// Parse and assert body
 		body := ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Site Details Fetched!")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Site Details Fetched!", body["message"])
 		dataKeys := []string{"address", "email", "fb", "ig", "name", "phone", "tw", "wh"}
-		assert.Equal(t, utils.KeysExistInMap(dataKeys, body["data"].(map[string]interface{})), true)
+		assert.Equal(t, true, utils.KeysExistInMap(dataKeys, body["data"].(map[string]interface{})))
 	})
 }
 
@@ -40,15 +40,15 @@ func subscribe(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		res := ProcessTestBody(t, app, url, "POST", emailData)
 
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 200)
+		assert.Equal(t, 200, res.StatusCode)
 
 		// Parse and assert body
 		body := ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Subscription successful!")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Subscription successful!", body["message"])
 		expectedData := make(map[string]interface{})
 		expectedData["email"] = validEmail
-		assert.Equal(t, body["data"].(map[string]interface{}), expectedData)
+		assert.Equal(t, expectedData, body["data"].(map[string]interface{}))
 	})
 }
 
@@ -67,12 +67,12 @@ func getReviews(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		res, _ := app.Test(req)
 
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 200)
+		assert.Equal(t, 200, res.StatusCode)
 
 		// Parse and assert body
 		body := ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Reviews fetched!")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Reviews fetched!", body["message"])
 
 		var expectedData []map[string]interface{}
 		expectedReviewerData := map[string]interface{}{
@@ -86,7 +86,7 @@ func getReviews(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		expectedData = append(expectedData, expectedReviewData)
 		data, _ := json.Marshal(body["data"])
 		expectedDataJson, _ := json.Marshal(expectedData)
-		assert.Equal(t, data, expectedDataJson)
+		assert.Equal(t, expectedDataJson, data)
 	})
 }
 func TestGeneral(t *testing.T) {

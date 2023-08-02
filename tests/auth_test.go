@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"encoding/json"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
@@ -38,27 +39,27 @@ func register(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		res := ProcessTestBody(t, app, url, "POST", userData)
 
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 201)
+		assert.Equal(t, 201, res.StatusCode)
 
 		// Parse and assert body
 		body := ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Registration successful")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Registration successful", body["message"])
 		expectedData := make(map[string]interface{})
 		expectedData["email"] = validEmail
-		assert.Equal(t, body["data"].(map[string]interface{}), expectedData)
+		assert.Equal(t, expectedData, body["data"].(map[string]interface{}))
 
 		// Verify that a user with the same email cannot be registered again
 		res = ProcessTestBody(t, app, url, "POST", userData)
-		assert.Equal(t, res.StatusCode, 422)
+		assert.Equal(t, 422, res.StatusCode)
 
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "failure")
-		assert.Equal(t, body["message"], "Invalid Entry")
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Invalid Entry", body["message"])
 		expectedData = make(map[string]interface{})
 		expectedData["email"] = "Email already registered!"
-		assert.Equal(t, body["data"].(map[string]interface{}), expectedData)
+		assert.Equal(t, expectedData, body["data"].(map[string]interface{}))
 	})
 }
 
@@ -80,24 +81,24 @@ func verifyEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 
 		// Verify that the email verification fails with an invalid otp
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 404)
+		assert.Equal(t, 404, res.StatusCode)
 
 		// Parse and assert body
 		body := ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "failure")
-		assert.Equal(t, body["message"], "Incorrect Otp")
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Incorrect Otp", body["message"])
 
 		// Verify that the email verification succeeds with a valid otp
 		realOtp := models.Otp{UserId: user.ID}
 		db.Create(&realOtp)
 		emailOtpData.Otp = *realOtp.Code
 		res = ProcessTestBody(t, app, url, "POST", emailOtpData)
-		assert.Equal(t, res.StatusCode, 200)
+		assert.Equal(t, 200, res.StatusCode)
 
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Account verification successful")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Account verification successful", body["message"])
 	})
 }
 
@@ -121,33 +122,33 @@ func resendVerificationEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl 
 
 		// Verify that an unverified user can get a new email
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 200)
+		assert.Equal(t, 200, res.StatusCode)
 
 		// Parse and assert body
 		body := ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Verification email sent")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Verification email sent", body["message"])
 
 		// Verify that a verified user cannot get a new email
-		user.IsEmailVerified = &truth
+		*user.IsEmailVerified = true
 		db.Save(&user)
 		res = ProcessTestBody(t, app, url, "POST", emailData)
 		
-		assert.Equal(t, res.StatusCode, 200)
+		assert.Equal(t, 200, res.StatusCode)
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Email already verified")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Email already verified", body["message"])
 
 		// Verify that an error is raised when attempting to resend the verification email for a user that doesn't exist
 		emailData.Email = "invalid@example.com"
 		res = ProcessTestBody(t, app, url, "POST", emailData)
 		
-		assert.Equal(t, res.StatusCode, 404)
+		assert.Equal(t, 404, res.StatusCode)
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "failure")
-		assert.Equal(t, body["message"], "Incorrect Email")
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Incorrect Email", body["message"])
 	})
 }
 
@@ -168,22 +169,22 @@ func sendPasswordResetOtp(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl str
 
 		// Verify that an unverified user can get a new email
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 200)
+		assert.Equal(t, 200, res.StatusCode)
 
 		// Parse and assert body
 		body := ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Password otp sent")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Password otp sent", body["message"])
 
 		// Verify that an error is raised when attempting to send password reset email for a user that doesn't exist
 		emailData.Email = "invalid@example.com"
 		res = ProcessTestBody(t, app, url, "POST", emailData)
 		
-		assert.Equal(t, res.StatusCode, 404)
+		assert.Equal(t, 404, res.StatusCode)
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "failure")
-		assert.Equal(t, body["message"], "Incorrect Email")
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Incorrect Email", body["message"])
 	})
 }
 
@@ -211,23 +212,23 @@ func setNewPassword(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 
 		// Verify that the request fails with incorrect email
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 404)
+		assert.Equal(t, 404, res.StatusCode)
 
 		// Parse and assert body
 		body := ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "failure")
-		assert.Equal(t, body["message"], "Incorrect Email")
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Incorrect Email", body["message"])
 
 		// Verify that the request fails with incorrect otp
 		passwordResetData.Email = user.Email
 		res = ProcessTestBody(t, app, url, "POST", passwordResetData)
 		// Assert Status code
-		assert.Equal(t, res.StatusCode, 404)
+		assert.Equal(t, 404, res.StatusCode)
 
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "failure")
-		assert.Equal(t, body["message"], "Incorrect Otp")
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Incorrect Otp", body["message"])
 
 		// Verify that password reset succeeds
 		realOtp := models.Otp{UserId: user.ID}
@@ -236,11 +237,64 @@ func setNewPassword(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		res = ProcessTestBody(t, app, url, "POST", passwordResetData)
 
 		// Assert response
-		assert.Equal(t, res.StatusCode, 200)
+		assert.Equal(t, 200, res.StatusCode)
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
-		assert.Equal(t, body["status"], "success")
-		assert.Equal(t, body["message"], "Password reset successful")
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Password reset successful", body["message"])
+	})
+}
+
+func login(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	t.Run("Login", func(t *testing.T) {
+		user := CreateTestUser(db)
+
+		url := fmt.Sprintf("%s/login", baseUrl)
+		loginData := schemas.LoginSchema{
+			Email: "invalid@example.com", // Invalid email
+			Password: "invalidpassword",
+		}
+
+		res := ProcessTestBody(t, app, url, "POST", loginData)
+
+		// # Test for invalid credentials
+		// Assert Status code
+		assert.Equal(t, 401, res.StatusCode)
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Invalid Credentials", body["message"])
+
+		// Test for unverified credentials (email)
+		loginData.Email = user.Email
+		loginData.Password = "testpassword"
+		res = ProcessTestBody(t, app, url, "POST", loginData)
+		// Assert Status code
+		assert.Equal(t, 401, res.StatusCode)
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Verify your email first", body["message"])
+
+		// Test for valid credentials and verified email address
+		*user.IsEmailVerified = true
+		db.Save(&user)
+		res = ProcessTestBody(t, app, url, "POST", loginData)
+		// Assert response
+		assert.Equal(t, 201, res.StatusCode)
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Login successful", body["message"])
+		jwt := models.Jwt{}
+		db.Find(&jwt,"user_id = ?", user.ID)
+		expectedData := map[string]string{
+			"access": jwt.Access,
+			"refresh": jwt.Refresh,
+		}
+		data, _ := json.Marshal(body["data"])
+		expectedDataJson, _ := json.Marshal(expectedData)
+		assert.Equal(t, expectedDataJson, data)
 	})
 }
 
@@ -255,6 +309,7 @@ func TestAuth(t *testing.T) {
 	resendVerificationEmail(t, app, db, BASEURL)
 	sendPasswordResetOtp(t, app, db, BASEURL)
 	setNewPassword(t, app, db, BASEURL)
+	login(t, app, db, BASEURL)
 
 	// Drop Tables and Close Connectiom
 	CloseTestDatabase(db)

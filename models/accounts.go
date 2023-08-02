@@ -31,7 +31,7 @@ func (user User) FullName() string {
 	return fmt.Sprintf(fullName, user.FirstName, user.LastName)
 }
 
-func (user *User) BeforeSave(tx *gorm.DB) (err error) {
+func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
 	user.Password = utils.HashPassword(user.Password)
 	return
 }

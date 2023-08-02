@@ -14,9 +14,6 @@ import (
 
 )
 
-var truth = true
-var falsy = false
-
 type EmailSender struct{}
 
 func (es *EmailSender) SendEmail(db *gorm.DB, user models.User, emailType string) {
@@ -107,7 +104,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 	}
 
 	// Update User
-	user.IsEmailVerified = &truth
+	*user.IsEmailVerified = true
 	db.Save(&user)
 
 	// Send Welcome Email
@@ -267,7 +264,7 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(401).JSON(utils.ErrorResponse{Message: "Invalid Credentials"}.Init())
 	}
 
-	if user.IsEmailVerified == &falsy {
+	if !*user.IsEmailVerified {
 		return c.Status(401).JSON(utils.ErrorResponse{Message:"Verify your email first"}.Init())
 	}
 
