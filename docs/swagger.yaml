@@ -1,6 +1,33 @@
 consumes:
 - application/json
 definitions:
+  models.Listing:
+    properties:
+      active:
+        type: boolean
+      auctioneer:
+        $ref: '#/definitions/models.ShortUserData'
+      bids_count:
+        type: integer
+      category:
+        type: string
+      closing_date:
+        type: string
+      desc:
+        type: string
+      highest_bid:
+        type: number
+      image:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      slug:
+        type: string
+      watchlist:
+        type: boolean
+    type: object
   models.Review:
     properties:
       reviewer:
@@ -88,6 +115,17 @@ definitions:
         type: string
     required:
     - email
+    type: object
+  schemas.ListingsResponseSchemas:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Listing'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
     type: object
   schemas.LoginSchema:
     properties:
@@ -439,12 +477,34 @@ paths:
       summary: Add a subscriber
       tags:
       - General
+  /api/v7/listings:
+    get:
+      description: This endpoint retrieves all listings.
+      parameters:
+      - description: Listings Quantity
+        in: query
+        name: quantity
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListingsResponseSchemas'
+      summary: Retrieve all listings
+      tags:
+      - Listings
 produces:
 - application/json
 securityDefinitions:
   BearerAuth:
-    description: '"Type ''Bearer jwt_string'' to correctly set the API Key"'
+    description: Type 'Bearer jwt_string' to correctly set the API Key
     in: header
     name: Authorization
+    type: apiKey
+  GuestUserId:
+    description: For guest watchlists. Get ID from '/api/v7/listings/watchlist' POST
+      endpoint
+    in: header
+    name: GuestUserId
     type: apiKey
 swagger: "2.0"

@@ -385,9 +385,75 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v7/listings": {
+            "get": {
+                "description": "This endpoint retrieves all listings.",
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Retrieve all listings",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Listings Quantity",
+                        "name": "quantity",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ListingsResponseSchemas"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "models.Listing": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "auctioneer": {
+                    "$ref": "#/definitions/models.ShortUserData"
+                },
+                "bids_count": {
+                    "type": "integer"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "closing_date": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "highest_bid": {
+                    "type": "number"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "watchlist": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.Review": {
             "type": "object",
             "properties": {
@@ -507,6 +573,23 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 5,
                     "example": "johndoe@email.com"
+                }
+            }
+        },
+        "schemas.ListingsResponseSchemas": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Listing"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -672,9 +755,15 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "BearerAuth": {
-            "description": "\"Type 'Bearer jwt_string' to correctly set the API Key\"",
+            "description": "Type 'Bearer jwt_string' to correctly set the API Key",
             "type": "apiKey",
             "name": "Authorization",
+            "in": "header"
+        },
+        "GuestUserId": {
+            "description": "For guest watchlists. Get ID from '/api/v7/listings/watchlist' POST endpoint",
+            "type": "apiKey",
+            "name": "GuestUserId",
             "in": "header"
         }
     }

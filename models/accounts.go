@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"time"
-	"log"
 
 	"github.com/kayprogrammer/bidout-auction-v7/config"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
@@ -61,6 +60,5 @@ func (obj Otp) CheckExpiration() bool {
 	currentTime := time.Now().UTC()
 	diff := int64(currentTime.Sub(obj.UpdatedAt).Seconds())
 	emailExpirySecondsTimeout := config.GetConfig().EmailOTPExpireSeconds
-	log.Println(diff)
 	return diff > emailExpirySecondsTimeout
 }

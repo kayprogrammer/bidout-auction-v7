@@ -94,8 +94,11 @@ type Listing struct {
 	ClosingDate			time.Time			`json:"closing_date" gorm:"not null"`
 
 	ImageId				uuid.UUID			`json:"-" gorm:"not null"`
-	ImageObj			File				`gorm:"foreignKey:ImageId;constraint:OnDelete:SET NULL;null;"`
+	ImageObj			File				`json:"-" gorm:"foreignKey:ImageId;constraint:OnDelete:SET NULL;null;"`
 	Image				string				`json:"image" gorm:"-"`
+
+	Watchlist			bool				`json:"watchlist" gorm:"-"`
+
 }
 
 // Function to retrieve a listing by slug
@@ -165,12 +168,9 @@ func (listing Listing) TimeLeft() int64 {
 }
 
 func (listing Listing) Init(db *gorm.DB) Listing {
-	user := User{}
-	db.Find(&user,"id = ?", listing.AuctioneerId)
-	name := user.FullName()
-	listing.Auctioneer.Name = name
+	listing.Auctioneer.Name = listing.AuctioneerObj.FullName()
 
-	avatarId := user.AvatarId
+	avatarId := listing.AuctioneerObj.AvatarId
 	if avatarId != nil {
 		avatar := File{}
 		db.Find(&avatar,"id = ?", avatarId)
@@ -178,8 +178,16 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 		listing.Auctioneer.Avatar = &url
 	}
 
+	// Get Listing Image
+	imageId := listing.ImageId
+	image := File{}
+	db.Find(&image,"id = ?", imageId)
+	url := utils.GenerateFileUrl(imageId.String(), "listings", image.ResourceType)
+	listing.Image = url
+
 	listing.Price = listing.Price.Round(2)
 	listing.HighestBid = listing.HighestBid.Round(2)
+	listing.Category = &listing.CategoryObj.Name
 	return listing
 }
 

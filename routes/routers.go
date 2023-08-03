@@ -27,8 +27,9 @@ func SetupRoutes(app *fiber.App) {
 	authRouter.Post("/refresh", Refresh)
 	authRouter.Get("/logout", midw.AuthMiddleware, Logout)
 
-	// // Listings Routes
-	// listingsRouter := api.Group("/listings")
+	// Listings Routes
+	listingsRouter := api.Group("/listings")
+	listingsRouter.Get("", GetListings)
 
 	// // Auctioneer Routes
 	// auctioneerRouter := api.Group("/auctioneer")
