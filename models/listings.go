@@ -188,9 +188,10 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 	listing.Price = listing.Price.Round(2)
 	listing.HighestBid = listing.HighestBid.Round(2)
 	listing.Category = &listing.CategoryObj.Name
-	listing.Active = false
 	if listing.Active && (listing.TimeLeftSeconds() > 0) {
 		listing.Active = true
+	} else {
+		listing.Active = false
 	}
 	listing.ClosingDate = listing.ClosingDate.UTC()
 	return listing
