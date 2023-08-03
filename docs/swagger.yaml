@@ -116,6 +116,24 @@ definitions:
     required:
     - email
     type: object
+  schemas.ListingDetailResponseDataSchema:
+    properties:
+      listing:
+        $ref: '#/definitions/models.Listing'
+      related_listings:
+        items:
+          $ref: '#/definitions/models.Listing'
+        type: array
+    type: object
+  schemas.ListingDetailResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.ListingDetailResponseDataSchema'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   schemas.ListingsResponseSchemas:
     properties:
       data:
@@ -496,6 +514,23 @@ paths:
       summary: Retrieve all listings
       tags:
       - Listings
+  /api/v7/listings/detail/{slug}:
+    get:
+      description: This endpoint retrieves detail of a listing.
+      parameters:
+      - description: Listing Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListingDetailResponseSchema'
+      summary: Retrieve listing's detail
+      tags:
+      - Listings
 produces:
 - application/json
 securityDefinitions:
@@ -505,8 +540,8 @@ securityDefinitions:
     name: Authorization
     type: apiKey
   GuestUserAuth:
-    description: For guest watchlists. Get ID from '/api/v7/listings/watchlist' POST
-      endpoint
+    description: For guest watchlists. Get ID (uuid) from '/api/v7/listings/watchlist'
+      POST endpoint
     in: header
     name: GuestUserId
     type: apiKey

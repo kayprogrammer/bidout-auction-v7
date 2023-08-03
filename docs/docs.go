@@ -418,6 +418,32 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v7/listings/detail/{slug}": {
+            "get": {
+                "description": "This endpoint retrieves detail of a listing.",
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Retrieve listing's detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Listing Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ListingDetailResponseSchema"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -581,6 +607,34 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 5,
                     "example": "johndoe@email.com"
+                }
+            }
+        },
+        "schemas.ListingDetailResponseDataSchema": {
+            "type": "object",
+            "properties": {
+                "listing": {
+                    "$ref": "#/definitions/models.Listing"
+                },
+                "related_listings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Listing"
+                    }
+                }
+            }
+        },
+        "schemas.ListingDetailResponseSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.ListingDetailResponseDataSchema"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -769,7 +823,7 @@ const docTemplate = `{
             "in": "header"
         },
         "GuestUserAuth": {
-            "description": "For guest watchlists. Get ID from '/api/v7/listings/watchlist' POST endpoint",
+            "description": "For guest watchlists. Get ID (uuid) from '/api/v7/listings/watchlist' POST endpoint",
             "type": "apiKey",
             "name": "GuestUserId",
             "in": "header"

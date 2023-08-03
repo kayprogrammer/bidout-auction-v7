@@ -30,6 +30,7 @@ func SetupRoutes(app *fiber.App) {
 	// Listings Routes
 	listingsRouter := api.Group("/listings")
 	listingsRouter.Get("", midw.ClientMiddleware, GetListings)
+	listingsRouter.Get("/detail/:slug", midw.ClientMiddleware, GetListing)
 
 	// // Auctioneer Routes
 	// auctioneerRouter := api.Group("/auctioneer")

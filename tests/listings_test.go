@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"log"
 	"encoding/json"
 	"net/http/httptest"
 	"testing"
@@ -30,6 +31,7 @@ func getListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		assert.Equal(t, "Listings fetched", body["message"])
 
 		data, _ := json.Marshal(body["data"])
+		log.Println(data)
 		assert.Equal(t, true, (len(data) > 0))
 	})
 }
