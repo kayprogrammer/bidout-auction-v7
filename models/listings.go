@@ -188,6 +188,11 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 	listing.Price = listing.Price.Round(2)
 	listing.HighestBid = listing.HighestBid.Round(2)
 	listing.Category = &listing.CategoryObj.Name
+	listing.Active = false
+	if listing.Active && (listing.TimeLeftSeconds() > 0) {
+		listing.Active = true
+	}
+	listing.ClosingDate = listing.ClosingDate.UTC()
 	return listing
 }
 
@@ -239,7 +244,8 @@ type Watchlist struct {
 	ListingId			uuid.UUID			`json:"-" gorm:"not null;uniqueIndex:idx_user_id_listing_id,uniqueIndex:idx_listing_id_session_key"`
 	Listing				Listing				`json:"-" gorm:"foreignKey:ListingId;constraint:OnDelete:CASCADE;not null;"`
 
-	SessionKey			uuid.UUID			`json:"-" gorm:"uniqueIndex:idx_listing_id_session_key,where:session_key IS NOT NULL"`
+	GuestUserId			*uuid.UUID			`json:"-" gorm:"uniqueIndex:idx_listing_id_guest_user_id,where:guest_user_id IS NOT NULL"`
+	GuestUser			*GuestUser			`json:"-" gorm:"foreignKey:GuestUserId;constraint:OnDelete:CASCADE;null;"`
 }
 
 // --------------------------------------------------------------

@@ -490,6 +490,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/schemas.ListingsResponseSchemas'
+      security:
+      - BearerAuth: []
+      - GuestUserAuth: []
       summary: Retrieve all listings
       tags:
       - Listings
@@ -501,7 +504,7 @@ securityDefinitions:
     in: header
     name: Authorization
     type: apiKey
-  GuestUserId:
+  GuestUserAuth:
     description: For guest watchlists. Get ID from '/api/v7/listings/watchlist' POST
       endpoint
     in: header

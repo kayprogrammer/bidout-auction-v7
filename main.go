@@ -21,11 +21,11 @@ import (
 // @in header 
 // @name Authorization 
 // @description Type 'Bearer jwt_string' to correctly set the API Key
-// @Security GuestUserId
-// @securityDefinitions.apikey GuestUserId 
+// @Security GuestUserAuth
+// @securityDefinitions.apikey GuestUserAuth 
 // @in header 
 // @name GuestUserId 
-// @description For guest watchlists. Get ID from '/api/v7/listings/watchlist' POST endpoint
+// @description For guest watchlists. Get ID (uuid) from '/api/v7/listings/watchlist' POST endpoint
 func main() {
 	database.ConnectDb()
 	db := database.Database.Db

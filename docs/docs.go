@@ -388,6 +388,14 @@ const docTemplate = `{
         },
         "/api/v7/listings": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "GuestUserAuth": []
+                    }
+                ],
                 "description": "This endpoint retrieves all listings.",
                 "tags": [
                     "Listings"
@@ -760,7 +768,7 @@ const docTemplate = `{
             "name": "Authorization",
             "in": "header"
         },
-        "GuestUserId": {
+        "GuestUserAuth": {
             "description": "For guest watchlists. Get ID from '/api/v7/listings/watchlist' POST endpoint",
             "type": "apiKey",
             "name": "GuestUserId",

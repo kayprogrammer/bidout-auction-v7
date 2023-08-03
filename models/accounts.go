@@ -35,6 +35,10 @@ func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
+type GuestUser struct {
+	BaseModel
+}
+
 type Jwt struct {
 	BaseModel
 	UserId				uuid.UUID		`json:"user_id" gorm:"not null;unique;"`
