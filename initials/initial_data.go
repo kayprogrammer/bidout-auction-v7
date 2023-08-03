@@ -15,6 +15,7 @@ import (
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
+	"github.com/shopspring/decimal"
 )
 var	truth = true
 func createSuperUser(db *gorm.DB) models.User {
@@ -180,6 +181,7 @@ func createListings(db *gorm.DB, auctioneerId uuid.UUID, categories []models.Cat
 				Slug: &slugStr, 
 				Desc: "Korem ipsum dolor amet, consectetur adipiscing elit. Maece nas in pulvinar neque. Nulla finibus lobortis pulvinar. Donec a consectetur nulla.", 
 				CategoryId: &randomCategory.ID, 
+				Price: decimal.NewFromInt(int64((i+1) * 1000)).Round(2),
 				ClosingDate: severalDaysLater, 
 				ImageId: images[i].ID,
 			}
