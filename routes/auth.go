@@ -242,6 +242,7 @@ func SetNewPassword(c *fiber.Ctx) error {
 // @Success 201 {object} schemas.ResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 401 {object} utils.ErrorResponse
+// @Security GuestUserAuth
 // @Router /api/v7/auth/login [post]
 func Login(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
@@ -275,6 +276,22 @@ func Login(c *fiber.Ctx) error {
 	db.Where("user_id = ?", user.ID).Delete(&models.Jwt{}) // Delete existing jwt
 	db.Create(&jwt)
 
+	// Move all guest user watchlists to the authenticated user watchlists
+	client := GetClient(c)
+	log.Println(client)
+	if (client != nil) && (client.Type == "guest") {
+		watchlists := []models.Watchlist{}
+		db.Where("guest_user_id = ?", client.ID).Find(&watchlists)
+		if len(watchlists) > 0 {
+			watchlistsToCreate := []models.Watchlist{}
+			for _, wl:= range watchlists {
+				watchlist := models.Watchlist{UserId: &user.ID, ListingId: wl.ListingId}
+				watchlistsToCreate = append(watchlistsToCreate, watchlist)
+			}
+			db.Create(&watchlistsToCreate)
+		}
+		db.Where("id = ?", client.ID).Delete(&models.GuestUser{})
+	}
 	response := schemas.LoginResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Login successful"}.Init(),
 		Data:           schemas.TokensResponseSchema{Access: access, Refresh: refresh},

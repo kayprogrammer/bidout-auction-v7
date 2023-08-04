@@ -24,6 +24,11 @@ const docTemplate = `{
     "paths": {
         "/api/v7/auth/login": {
             "post": {
+                "security": [
+                    {
+                        "GuestUserAuth": []
+                    }
+                ],
                 "description": "This endpoint generates new access and refresh tokens for authentication",
                 "tags": [
                     "Auth"
@@ -413,7 +418,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/schemas.ListingsResponseSchemas"
+                            "$ref": "#/definitions/schemas.ListingsResponseSchema"
                         }
                     }
                 }
@@ -440,6 +445,83 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/schemas.ListingDetailResponseSchema"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v7/listings/watchlist": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "GuestUserAuth": []
+                    }
+                ],
+                "description": "This endpoint retrieves all watchlist listings.",
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Retrieve all listings by users watchlist",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ListingsResponseSchema"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "GuestUserAuth": []
+                    }
+                ],
+                "description": "This endpoint adds or removes a listing from a user's watchlist, authenticated or not.... As a guest, ensure to store guestuser_id in localstorage and keep passing it to header 'guestuserid' in subsequent requests",
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Add or Remove listing from a users watchlist",
+                "parameters": [
+                    {
+                        "description": "Add/Remove Watchlist",
+                        "name": "listing_slug",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.AddOrRemoveWatchlistSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.AddOrRemoveWatchlistResponseSchema"
+                        }
+                    },
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.AddOrRemoveWatchlistResponseSchema"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -482,6 +564,9 @@ const docTemplate = `{
                 },
                 "slug": {
                     "type": "string"
+                },
+                "time_left_seconds": {
+                    "type": "integer"
                 },
                 "watchlist": {
                     "type": "boolean"
@@ -597,6 +682,40 @@ const docTemplate = `{
                 }
             }
         },
+        "schemas.AddOrRemoveWatchlistResponseDataSchema": {
+            "type": "object",
+            "properties": {
+                "guestuser_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.AddOrRemoveWatchlistResponseSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.AddOrRemoveWatchlistResponseDataSchema"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.AddOrRemoveWatchlistSchema": {
+            "type": "object",
+            "required": [
+                "slug"
+            ],
+            "properties": {
+                "slug": {
+                    "type": "string",
+                    "example": "listing_slug"
+                }
+            }
+        },
         "schemas.EmailRequestSchema": {
             "type": "object",
             "required": [
@@ -638,7 +757,7 @@ const docTemplate = `{
                 }
             }
         },
-        "schemas.ListingsResponseSchemas": {
+        "schemas.ListingsResponseSchema": {
             "type": "object",
             "properties": {
                 "data": {

@@ -56,7 +56,7 @@ func ClientMiddleware(c *fiber.Ctx) error {
 			}
 			db.Find(&guest, "id = ?", guestId)
 			if guest.ID != uuid.Nil {
-				c.Locals("client", guestId)
+				c.Locals("client", guest)
 			}
 		}
 	} else {
@@ -65,7 +65,7 @@ func ClientMiddleware(c *fiber.Ctx) error {
 		if err != nil {
 			return c.Status(401).JSON(utils.ErrorResponse{Message: *err}.Init())
 		}
-		c.Locals("client", user.ID)
+		c.Locals("client", user)
 	}
 	return c.Next()
 }

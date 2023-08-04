@@ -25,6 +25,8 @@ definitions:
         type: number
       slug:
         type: string
+      time_left_seconds:
+        type: integer
       watchlist:
         type: boolean
     type: object
@@ -107,6 +109,28 @@ definitions:
     - last_name
     - password
     type: object
+  schemas.AddOrRemoveWatchlistResponseDataSchema:
+    properties:
+      guestuser_id:
+        type: string
+    type: object
+  schemas.AddOrRemoveWatchlistResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.AddOrRemoveWatchlistResponseDataSchema'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  schemas.AddOrRemoveWatchlistSchema:
+    properties:
+      slug:
+        example: listing_slug
+        type: string
+    required:
+    - slug
+    type: object
   schemas.EmailRequestSchema:
     properties:
       email:
@@ -134,7 +158,7 @@ definitions:
       status:
         type: string
     type: object
-  schemas.ListingsResponseSchemas:
+  schemas.ListingsResponseSchema:
     properties:
       data:
         items:
@@ -282,6 +306,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - GuestUserAuth: []
       summary: Login a user
       tags:
       - Auth
@@ -507,7 +533,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/schemas.ListingsResponseSchemas'
+            $ref: '#/definitions/schemas.ListingsResponseSchema'
       security:
       - BearerAuth: []
       - GuestUserAuth: []
@@ -529,6 +555,54 @@ paths:
           schema:
             $ref: '#/definitions/schemas.ListingDetailResponseSchema'
       summary: Retrieve listing's detail
+      tags:
+      - Listings
+  /api/v7/listings/watchlist:
+    get:
+      description: This endpoint retrieves all watchlist listings.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListingsResponseSchema'
+      security:
+      - BearerAuth: []
+      - GuestUserAuth: []
+      summary: Retrieve all listings by users watchlist
+      tags:
+      - Listings
+    post:
+      description: This endpoint adds or removes a listing from a user's watchlist,
+        authenticated or not.... As a guest, ensure to store guestuser_id in localstorage
+        and keep passing it to header 'guestuserid' in subsequent requests
+      parameters:
+      - description: Add/Remove Watchlist
+        in: body
+        name: listing_slug
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.AddOrRemoveWatchlistSchema'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.AddOrRemoveWatchlistResponseSchema'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/schemas.AddOrRemoveWatchlistResponseSchema'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - GuestUserAuth: []
+      summary: Add or Remove listing from a users watchlist
       tags:
       - Listings
 produces:

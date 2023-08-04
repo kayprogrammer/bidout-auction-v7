@@ -98,6 +98,7 @@ type Listing struct {
 	Image				string				`json:"image" gorm:"-"`
 
 	Watchlist			bool				`json:"watchlist" gorm:"-"`
+	TimeLeftSecs		int64				`json:"time_left_seconds" gorm:"-"`
 
 }
 
@@ -194,6 +195,7 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 		listing.Active = false
 	}
 	listing.ClosingDate = listing.ClosingDate.UTC()
+	listing.TimeLeftSecs = listing.TimeLeftSeconds()
 	return listing
 }
 
