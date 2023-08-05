@@ -1,25 +1,24 @@
 package routes
 
 import (
-	"log"
 	"github.com/gofiber/fiber/v2"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
+	auth "github.com/kayprogrammer/bidout-auction-v7/authentication"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/senders"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
-	auth "github.com/kayprogrammer/bidout-auction-v7/authentication"
 	"gorm.io/gorm"
-
+	"gorm.io/gorm/clause"
 )
 
 type EmailSender struct{}
 
 func (es *EmailSender) SendEmail(db *gorm.DB, user models.User, emailType string) {
-    // Implementation of sending an actual email using your preferred email library.
-    // Replace this with your real email sending code.
-    senders.SendEmail(db, user, emailType)
+	// Implementation of sending an actual email using your preferred email library.
+	// Replace this with your real email sending code.
+	senders.SendEmail(db, user, emailType)
 }
 
 // @Summary Register a new user
@@ -41,10 +40,10 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(422).JSON(err)
 	}
 
-	db.Find(&user,"email = ?", user.Email)
+	db.Find(&user, "email = ?", user.Email)
 	if user.ID != uuid.Nil {
 		data := map[string]string{
-			"email": "Email already registered!", 
+			"email": "Email already registered!",
 		}
 		return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
 	}
@@ -83,19 +82,18 @@ func VerifyEmail(c *fiber.Ctx) error {
 	}
 
 	user := models.User{}
-	db.Find(&user,"email = ?", verifyEmail.Email)
+	db.Find(&user, "email = ?", verifyEmail.Email)
 	if user.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
 	}
-	log.Println(user.IsEmailVerified)
 
 	if *user.IsEmailVerified {
 		return c.Status(200).JSON(schemas.ResponseSchema{Message: "Email already verified"}.Init())
 	}
 
 	otp := models.Otp{}
-	db.Find(&otp,"user_id = ?", user.ID)
-	if otp.ID == uuid.Nil || *otp.Code !=  verifyEmail.Otp {
+	db.Find(&otp, "user_id = ?", user.ID)
+	if otp.ID == uuid.Nil || *otp.Code != verifyEmail.Otp {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Otp"}.Init())
 	}
 
@@ -114,7 +112,6 @@ func VerifyEmail(c *fiber.Ctx) error {
 	response := schemas.ResponseSchema{Message: "Account verification successful"}.Init()
 	return c.Status(200).JSON(response)
 }
-
 
 // @Summary Resend Verification Email
 // @Description This endpoint resends new otp to the user's email.
@@ -136,7 +133,7 @@ func ResendVerificationEmail(c *fiber.Ctx) error {
 	}
 
 	user := models.User{}
-	db.Find(&user,"email = ?", emailSchema.Email)
+	db.Find(&user, "email = ?", emailSchema.Email)
 	if user.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
 	}
@@ -174,7 +171,7 @@ func SendPasswordResetOtp(c *fiber.Ctx) error {
 	}
 
 	user := models.User{}
-	db.Find(&user,"email = ?", emailSchema.Email)
+	db.Find(&user, "email = ?", emailSchema.Email)
 	if user.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
 	}
@@ -208,14 +205,14 @@ func SetNewPassword(c *fiber.Ctx) error {
 	}
 
 	user := models.User{}
-	db.Find(&user,"email = ?", passwordResetSchema.Email)
+	db.Find(&user, "email = ?", passwordResetSchema.Email)
 	if user.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
 	}
 
 	otp := models.Otp{}
-	db.Find(&otp,"user_id = ?", user.ID)
-	if otp.ID == uuid.Nil || *otp.Code !=  passwordResetSchema.Otp {
+	db.Find(&otp, "user_id = ?", user.ID)
+	if otp.ID == uuid.Nil || *otp.Code != passwordResetSchema.Otp {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Otp"}.Init())
 	}
 
@@ -257,7 +254,7 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	user := models.User{}
-	db.Find(&user,"email = ?", userLoginSchema.Email)
+	db.Find(&user, "email = ?", userLoginSchema.Email)
 	if user.ID == uuid.Nil {
 		return c.Status(401).JSON(utils.ErrorResponse{Message: "Invalid Credentials"}.Init())
 	}
@@ -266,7 +263,7 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	if !*user.IsEmailVerified {
-		return c.Status(401).JSON(utils.ErrorResponse{Message:"Verify your email first"}.Init())
+		return c.Status(401).JSON(utils.ErrorResponse{Message: "Verify your email first"}.Init())
 	}
 
 	// Create Auth Tokens
@@ -278,17 +275,15 @@ func Login(c *fiber.Ctx) error {
 
 	// Move all guest user watchlists to the authenticated user watchlists
 	client := GetClient(c)
-	log.Println(client)
 	if (client != nil) && (client.Type == "guest") {
 		watchlists := []models.Watchlist{}
 		db.Where("guest_user_id = ?", client.ID).Find(&watchlists)
 		if len(watchlists) > 0 {
-			watchlistsToCreate := []models.Watchlist{}
-			for _, wl:= range watchlists {
-				watchlist := models.Watchlist{UserId: &user.ID, ListingId: wl.ListingId}
-				watchlistsToCreate = append(watchlistsToCreate, watchlist)
+			listingUuids := []uuid.UUID{}
+			for _, wl := watchlists {
+				listingUuids = append(listingUuids, wl.ID)
 			}
-			db.Create(&watchlistsToCreate)
+			db.Clauses(clause.OnConflict{DoNothing: true}).Model(models.Watchlist{}).Select("user_id", "guest_user_id").Where("guest_user_id = ?", client.ID).Updates(models.Watchlist{UserId: &user.ID, GuestUserId: nil})
 		}
 		db.Where("id = ?", client.ID).Delete(&models.GuestUser{})
 	}
@@ -322,7 +317,7 @@ func Refresh(c *fiber.Ctx) error {
 
 	token := refreshTokenSchema.Refresh
 	jwt := models.Jwt{}
-	db.Find(&jwt,"refresh = ?", token)
+	db.Find(&jwt, "refresh = ?", token)
 	if jwt.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Refresh token does not exist"}.Init())
 	}
@@ -357,7 +352,7 @@ func Logout(c *fiber.Ctx) error {
 	user := c.Locals("user").(*models.User)
 
 	db.Where("user_id = ?", user.ID).Delete(&models.Jwt{}) // Delete jwt
-	
+
 	response := schemas.ResponseSchema{Message: "Logout successful"}.Init()
 	return c.Status(200).JSON(response)
 }

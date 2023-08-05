@@ -16,7 +16,7 @@ func GetClient(c *fiber.Ctx) *Client {
 	client := Client{}
 	if clientContext == nil {
 		return nil
-	} else if user, ok := clientContext.(models.User); ok {
+	} else if user, ok := clientContext.(*models.User); ok {
 		client.ID = user.ID
 		client.Type = "user"
 	} else if guestUser, ok := clientContext.(models.GuestUser); ok {

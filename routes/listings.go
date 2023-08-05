@@ -2,13 +2,14 @@ package routes
 
 import (
 	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"github.com/satori/go.uuid"
 )
 
 // @Summary Retrieve all listings
@@ -60,7 +61,7 @@ func GetListing(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 
 	// Get listing
-	db.Preload(clause.Associations).Find(&listing,"slug = ?", slug)
+	db.Preload(clause.Associations).Find(&listing, "slug = ?", slug)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
 	}
@@ -70,9 +71,9 @@ func GetListing(c *fiber.Ctx) error {
 
 	response := schemas.ListingDetailResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Listing details fetched"}.Init(),
-		Data:           schemas.ListingDetailResponseDataSchema{
-			Listing:			listing,
-			RelatedListings:	relatedListings,
+		Data: schemas.ListingDetailResponseDataSchema{
+			Listing:         listing,
+			RelatedListings: relatedListings,
 		},
 	}
 	return c.Status(200).JSON(response)
@@ -131,7 +132,7 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 
 	// Get listing
 	listing := models.Listing{}
-	db.Preload(clause.Associations).Find(&listing,"slug = ?", addRemoveWatchlistData.Slug)
+	db.Preload(clause.Associations).Find(&listing, "slug = ?", addRemoveWatchlistData.Slug)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
 	}
@@ -148,7 +149,7 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 	statusCode := 201
 	// Check if watchlist exists
 	watchlist := models.Watchlist{}
-	db.Where("user_id = ?", client.ID).Or("guest_user_id = ?", client.ID).Where("listing_id = ?", listing.ID).Find(&watchlist)
+	db.Where("user_id = ? OR guest_user_id = ? AND listing_id = ?", client.ID, client.ID, listing.ID).Find(&watchlist)
 	if watchlist.ID == uuid.Nil {
 		// Create Watchlist
 		watchlistToCreate := models.Watchlist{ListingId: listing.ID}

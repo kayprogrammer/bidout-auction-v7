@@ -204,13 +204,13 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 // BID
 type Bid struct {
 	BaseModel
-	UserId				uuid.UUID			`json:"-" gorm:"not null;uniqueIndex:idx_user_id_listing_id"`
+	UserId				uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id"`
 	UserObj				User				`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;not null;"`
 	User				ShortUserData		`json:"user" gorm:"-"`
 
-	ListingId			uuid.UUID			`json:"-" gorm:"not null;uniqueIndex:idx_user_id_listing_id,uniqueIndex:idx_listing_id_amount"`
+	ListingId			uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id;index:,unique,composite:listing_id_amount"`
 	Listing				Listing				`json:"-" gorm:"foreignKey:ListingId;constraint:OnDelete:CASCADE;not null;"`
-	Amount				decimal.Decimal		`json:"amount" gorm:"not null;uniqueIndex:idx_listing_id_amount"`
+	Amount				decimal.Decimal		`json:"amount" gorm:"not null;index:,unique,composite:listing_id_amount"`
 }
 
 func (bid *Bid) BeforeSave(tx *gorm.DB) (err error) {
@@ -241,13 +241,13 @@ func (bid Bid) Init(db *gorm.DB) Bid {
 // WATCHLIST
 type Watchlist struct {
 	BaseModel
-	UserId				*uuid.UUID			`json:"-" gorm:"uniqueIndex:idx_user_id_listing_id,where:user_id IS NOT NULL"`
+	UserId				*uuid.UUID			`json:"-" gorm:"null;index:,unique,composite:user_id_listing_id"`
 	User				*User				`json:"-" gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;null;"`
 
-	ListingId			uuid.UUID			`json:"-" gorm:"not null;uniqueIndex:idx_user_id_listing_id,uniqueIndex:idx_listing_id_session_key"`
+	ListingId			uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id;index:,unique,composite:listing_id_guest_user_id"`
 	Listing				Listing				`json:"-" gorm:"foreignKey:ListingId;constraint:OnDelete:CASCADE;not null;"`
 
-	GuestUserId			*uuid.UUID			`json:"-" gorm:"uniqueIndex:idx_listing_id_guest_user_id,where:guest_user_id IS NOT NULL"`
+	GuestUserId			*uuid.UUID			`json:"-" gorm:"null;index:,unique,composite:listing_id_guest_user_id"`
 	GuestUser			*GuestUser			`json:"-" gorm:"foreignKey:GuestUserId;constraint:OnDelete:CASCADE;null;"`
 }
 
