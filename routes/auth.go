@@ -279,11 +279,12 @@ func Login(c *fiber.Ctx) error {
 		watchlists := []models.Watchlist{}
 		db.Where("guest_user_id = ?", client.ID).Find(&watchlists)
 		if len(watchlists) > 0 {
-			listingUuids := []uuid.UUID{}
-			for _, wl := watchlists {
-				listingUuids = append(listingUuids, wl.ID)
+			watchlistsToCreate := []models.Watchlist{}
+			for _, wl := range watchlists {
+				watchlist := models.Watchlist{UserId: &user.ID, ListingId: wl.ListingId}
+				watchlistsToCreate = append(watchlistsToCreate, watchlist)
 			}
-			db.Clauses(clause.OnConflict{DoNothing: true}).Model(models.Watchlist{}).Select("user_id", "guest_user_id").Where("guest_user_id = ?", client.ID).Updates(models.Watchlist{UserId: &user.ID, GuestUserId: nil})
+			db.Clauses(clause.OnConflict{DoNothing: true}).Create(&watchlistsToCreate)
 		}
 		db.Where("id = ?", client.ID).Delete(&models.GuestUser{})
 	}

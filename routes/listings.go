@@ -33,7 +33,7 @@ func GetListings(c *fiber.Ctx) error {
 		listings[i] = listings[i].Init(db)
 		if client != nil {
 			watchlist := models.Watchlist{}
-			db.Where("user_id = ?", client.ID).Or("guest_user_id = ?", client.ID).Where("listing_id = ?", listings[i].ID).Find(&watchlist)
+			db.Where("(user_id = ? OR guest_user_id = ?) AND listing_id = ?", client.ID, client.ID, listings[i].ID).Take(&watchlist)
 			if watchlist.ID != uuid.Nil {
 				listings[i].Watchlist = true
 			}
@@ -67,7 +67,7 @@ func GetListing(c *fiber.Ctx) error {
 	}
 	listing = listing.Init(db)
 	relatedListings := []models.Listing{}
-	db.Preload(clause.Associations).Order("created_at DESC").Where("category_id = ?", listing.CategoryId).Not("id = ?", listing.ID).Find(&relatedListings)
+	db.Preload(clause.Associations).Order("created_at DESC").Where("category_id = ? AND NOT id = ?", listing.CategoryId, listing.ID).Find(&relatedListings)
 
 	response := schemas.ListingDetailResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Listing details fetched"}.Init(),
@@ -136,6 +136,7 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
 	}
+	log.Println(listing.ID)
 
 	client := GetClient(c)
 	if client == nil {
@@ -143,14 +144,13 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 		db.Create(&guestUser)
 		client = &Client{ID: guestUser.ID, Type: "guest"}
 	}
-	log.Println(client.ID)
 
 	respMessage := "Listing added to user watchlist"
 	statusCode := 201
 	// Check if watchlist exists
 	watchlist := models.Watchlist{}
-	db.Where("user_id = ? OR guest_user_id = ? AND listing_id = ?", client.ID, client.ID, listing.ID).Find(&watchlist)
-	if watchlist.ID == uuid.Nil {
+	result := db.Where("(user_id = ? OR guest_user_id = ?) AND listing_id = ?", client.ID, client.ID, listing.ID).Take(&watchlist)
+	if result.Error == gorm.ErrRecordNotFound {
 		// Create Watchlist
 		watchlistToCreate := models.Watchlist{ListingId: listing.ID}
 		if client.Type == "user" {
