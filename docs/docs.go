@@ -441,6 +441,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v7/listings/categories/{slug}": {
+            "get": {
+                "description": "This endpoint retrieves all listings in a particular category. Use slug 'other' for category other",
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Retrieve all listings by category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Category Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ListingsResponseSchema"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v7/listings/detail/{slug}": {
             "get": {
                 "description": "This endpoint retrieves detail of a listing.",

@@ -194,3 +194,50 @@ func GetCategories(c *fiber.Ctx) error {
 	}
 	return c.Status(200).JSON(response)
 }
+
+
+// @Summary Retrieve all listings by category
+// @Description This endpoint retrieves all listings in a particular category. Use slug 'other' for category other
+// @Tags Listings
+// @Param slug path string true  "Category Slug"
+// @Success 200 {object} schemas.ListingsResponseSchema
+// @Router /api/v7/listings/categories/{slug} [get]
+func GetCategoryListings(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	client := GetClient(c)
+	categorySlug := c.Params("slug")
+	
+	// Get Category
+	var categoryId *uuid.UUID
+	if categorySlug == "other" {
+		categoryId = nil
+	} else {
+		category := models.Category{}
+		db.First(&category, "slug = ?", categorySlug)
+		if category.ID == uuid.Nil {
+			return c.Status(404).JSON(utils.ErrorResponse{Message: "Category does not exist!"}.Init())
+		}
+		categoryId = &category.ID
+	}
+	
+	// Get listings
+	listings := []models.Listing{}
+	db.Preload(clause.Associations).Order("created_at DESC").Find(&listings, "category_id = ?", categoryId)
+
+	// Initialize each listing object in the slice
+	for i := range listings {
+		listings[i] = listings[i].Init(db)
+		if client != nil {
+			watchlist := models.Watchlist{}
+			db.Where("(user_id = ? OR guest_user_id = ?) AND listing_id = ?", client.ID, client.ID, listings[i].ID).Take(&watchlist)
+			if watchlist.ID != uuid.Nil {
+				listings[i].Watchlist = true
+			}
+		}
+	}
+	response := schemas.ListingsResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Category Listings fetched"}.Init(),
+		Data:           listings,
+	}
+	return c.Status(200).JSON(response)
+}

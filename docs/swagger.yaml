@@ -589,6 +589,24 @@ paths:
       summary: Retrieve all categories
       tags:
       - Listings
+  /api/v7/listings/categories/{slug}:
+    get:
+      description: This endpoint retrieves all listings in a particular category.
+        Use slug 'other' for category other
+      parameters:
+      - description: Category Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListingsResponseSchema'
+      summary: Retrieve all listings by category
+      tags:
+      - Listings
   /api/v7/listings/detail/{slug}:
     get:
       description: This endpoint retrieves detail of a listing.

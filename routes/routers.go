@@ -34,6 +34,7 @@ func SetupRoutes(app *fiber.App) {
 	listingsRouter.Get("/watchlist", midw.ClientMiddleware, GetWatchlistListings)
 	listingsRouter.Post("/watchlist", midw.ClientMiddleware, AddOrRemoveWatchlistListing)
 	listingsRouter.Get("/categories", GetCategories)
+	listingsRouter.Get("/categories/:slug", GetCategoryListings)
 
 	// // Auctioneer Routes
 	// auctioneerRouter := api.Group("/auctioneer")
