@@ -424,6 +424,23 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v7/listings/categories": {
+            "get": {
+                "description": "This endpoint retrieves all categories",
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Retrieve all categories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.CategoriesResponseSchema"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v7/listings/detail/{slug}": {
             "get": {
                 "description": "This endpoint retrieves detail of a listing.",
@@ -529,6 +546,19 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.Category": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Category"
+                },
+                "slug": {
+                    "type": "string",
+                    "example": "category_slug"
+                }
+            }
+        },
         "models.Listing": {
             "type": "object",
             "properties": {
@@ -697,10 +727,12 @@ const docTemplate = `{
                     "$ref": "#/definitions/schemas.AddOrRemoveWatchlistResponseDataSchema"
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
@@ -713,6 +745,25 @@ const docTemplate = `{
                 "slug": {
                     "type": "string",
                     "example": "listing_slug"
+                }
+            }
+        },
+        "schemas.CategoriesResponseSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Category"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
@@ -750,10 +801,12 @@ const docTemplate = `{
                     "$ref": "#/definitions/schemas.ListingDetailResponseDataSchema"
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
@@ -767,10 +820,12 @@ const docTemplate = `{
                     }
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
@@ -810,10 +865,12 @@ const docTemplate = `{
                     "$ref": "#/definitions/schemas.EmailRequestSchema"
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
@@ -821,10 +878,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
@@ -838,10 +897,12 @@ const docTemplate = `{
                     }
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
@@ -877,10 +938,12 @@ const docTemplate = `{
                     "$ref": "#/definitions/models.SiteDetail"
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
@@ -891,10 +954,12 @@ const docTemplate = `{
                     "$ref": "#/definitions/models.Subscriber"
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },

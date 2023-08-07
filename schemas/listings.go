@@ -34,3 +34,8 @@ type AddOrRemoveWatchlistResponseSchema struct {
 	ResponseSchema
 	Data					AddOrRemoveWatchlistResponseDataSchema		`json:"data"`
 }
+
+type CategoriesResponseSchema struct {
+	ResponseSchema
+	Data					[]models.Category	`json:"data"`
+}

@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"log"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
@@ -136,7 +134,6 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
 	}
-	log.Println(listing.ID)
 
 	client := GetClient(c)
 	if client == nil {
@@ -177,4 +174,23 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 		},
 	}
 	return c.Status(statusCode).JSON(response)
+}
+
+// @Summary Retrieve all categories
+// @Description This endpoint retrieves all categories
+// @Tags Listings
+// @Success 200 {object} schemas.CategoriesResponseSchema
+// @Router /api/v7/listings/categories [get]
+func GetCategories(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+
+	// Get categories
+	categories := []models.Category{}
+	db.Find(&categories)
+
+	response := schemas.CategoriesResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Categories fetched"}.Init(),
+		Data:           categories,
+	}
+	return c.Status(200).JSON(response)
 }

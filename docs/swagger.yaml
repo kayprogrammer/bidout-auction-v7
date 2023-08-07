@@ -1,6 +1,15 @@
 consumes:
 - application/json
 definitions:
+  models.Category:
+    properties:
+      name:
+        example: Category
+        type: string
+      slug:
+        example: category_slug
+        type: string
+    type: object
   models.Listing:
     properties:
       active:
@@ -119,8 +128,10 @@ definitions:
       data:
         $ref: '#/definitions/schemas.AddOrRemoveWatchlistResponseDataSchema'
       message:
+        example: Data fetched/created/updated/deleted
         type: string
       status:
+        example: success
         type: string
     type: object
   schemas.AddOrRemoveWatchlistSchema:
@@ -130,6 +141,19 @@ definitions:
         type: string
     required:
     - slug
+    type: object
+  schemas.CategoriesResponseSchema:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      message:
+        example: Data fetched/created/updated/deleted
+        type: string
+      status:
+        example: success
+        type: string
     type: object
   schemas.EmailRequestSchema:
     properties:
@@ -154,8 +178,10 @@ definitions:
       data:
         $ref: '#/definitions/schemas.ListingDetailResponseDataSchema'
       message:
+        example: Data fetched/created/updated/deleted
         type: string
       status:
+        example: success
         type: string
     type: object
   schemas.ListingsResponseSchema:
@@ -165,8 +191,10 @@ definitions:
           $ref: '#/definitions/models.Listing'
         type: array
       message:
+        example: Data fetched/created/updated/deleted
         type: string
       status:
+        example: success
         type: string
     type: object
   schemas.LoginSchema:
@@ -194,15 +222,19 @@ definitions:
       data:
         $ref: '#/definitions/schemas.EmailRequestSchema'
       message:
+        example: Data fetched/created/updated/deleted
         type: string
       status:
+        example: success
         type: string
     type: object
   schemas.ResponseSchema:
     properties:
       message:
+        example: Data fetched/created/updated/deleted
         type: string
       status:
+        example: success
         type: string
     type: object
   schemas.ReviewsResponseSchema:
@@ -212,8 +244,10 @@ definitions:
           $ref: '#/definitions/models.Review'
         type: array
       message:
+        example: Data fetched/created/updated/deleted
         type: string
       status:
+        example: success
         type: string
     type: object
   schemas.SetNewPasswordSchema:
@@ -240,8 +274,10 @@ definitions:
       data:
         $ref: '#/definitions/models.SiteDetail'
       message:
+        example: Data fetched/created/updated/deleted
         type: string
       status:
+        example: success
         type: string
     type: object
   schemas.SubscriberResponseSchema:
@@ -249,8 +285,10 @@ definitions:
       data:
         $ref: '#/definitions/models.Subscriber'
       message:
+        example: Data fetched/created/updated/deleted
         type: string
       status:
+        example: success
         type: string
     type: object
   schemas.VerifyEmailRequestSchema:
@@ -538,6 +576,17 @@ paths:
       - BearerAuth: []
       - GuestUserAuth: []
       summary: Retrieve all listings
+      tags:
+      - Listings
+  /api/v7/listings/categories:
+    get:
+      description: This endpoint retrieves all categories
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.CategoriesResponseSchema'
+      summary: Retrieve all categories
       tags:
       - Listings
   /api/v7/listings/detail/{slug}:

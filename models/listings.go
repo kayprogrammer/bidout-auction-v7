@@ -16,8 +16,8 @@ import (
 // CATEGORY
 type Category struct {
 	BaseModel
-	Name				string				`json:"name" gorm:"not null"`
-	Slug				*string				`json:"slug" gorm:"not null;unique"`
+	Name				string				`json:"name" gorm:"not null" example:"Category"`
+	Slug				*string				`json:"slug" gorm:"not null;unique" example:"category_slug"`
 }
 
 // Function to retrieve a category by slug
