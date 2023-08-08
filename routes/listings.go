@@ -65,7 +65,7 @@ func GetListing(c *fiber.Ctx) error {
 	}
 	listing = listing.Init(db)
 	relatedListings := []models.Listing{}
-	db.Preload(clause.Associations).Order("created_at DESC").Where("category_id = ? AND NOT id = ?", listing.CategoryId, listing.ID).Find(&relatedListings)
+	db.Preload(clause.Associations).Order("created_at DESC").Where("category_id = ? AND NOT id = ?", listing.CategoryId, listing.ID).Limit(3).Find(&relatedListings)
 
 	response := schemas.ListingDetailResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Listing details fetched"}.Init(),
@@ -95,7 +95,9 @@ func GetWatchlistListings(c *fiber.Ctx) error {
 		db.Preload("Listing.AuctioneerObj").Preload("Listing.CategoryObj").Preload(clause.Associations).Where("user_id = ?", client.ID).Or("guest_user_id = ?", client.ID).Order("created_at DESC").Find(&watchlists)
 	}
 	for i := range watchlists {
-		listings = append(listings, watchlists[i].Listing.Init(db))
+		listing := watchlists[i].Listing
+		listing.Watchlist = true
+		listings = append(listings, listing.Init(db))
 	}
 
 	response := schemas.ListingsResponseSchema{
@@ -256,7 +258,7 @@ func GetListingBids(c *fiber.Ctx) error {
 
 	listing := models.Listing{}
 	db.Preload("Bids", func(db *gorm.DB) *gorm.DB {
-		return db.Order("updated_at DESC") // Order by updated
+		return db.Order("updated_at DESC").Limit(3) // Order by updated
 	}).Find(&listing, "slug = ?", listingSlug)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
@@ -264,10 +266,6 @@ func GetListingBids(c *fiber.Ctx) error {
 
 	// Get Bids
 	bids := listing.Bids
-	if len(bids) > 3 {
-		bids = bids[:3]
-	}
-
 	for i := range bids {
 		bids[i] = bids[i].Init(db)
 	}

@@ -4,9 +4,11 @@ import (
 	"log"
 	"github.com/gofiber/swagger"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/kayprogrammer/bidout-auction-v7/database"
 	"github.com/kayprogrammer/bidout-auction-v7/routes"
 	"github.com/kayprogrammer/bidout-auction-v7/initials"
+	"github.com/kayprogrammer/bidout-auction-v7/config"
 
 	_ "github.com/kayprogrammer/bidout-auction-v7/docs"
 )
@@ -27,6 +29,7 @@ import (
 // @name GuestUserId 
 // @description For guest watchlists. Get ID (uuid) from '/api/v7/listings/watchlist' POST endpoint
 func main() {
+	cfg := config.GetConfig()
 	database.ConnectDb()
 	db := database.Database.Db
 	initials.CreateInitialData(db)
@@ -35,6 +38,14 @@ func main() {
 
 	// Set up the database middleware
 	app.Use(database.DatabaseMiddleware)
+
+	// CORS config
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: cfg.CORSAllowedOrigins,
+		AllowHeaders:  "Origin, Content-Type, Accept, Authorization, Guestuserid, Access-Control-Allow-Origin, Content-Disposition",
+		AllowCredentials: true,
+		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+	}))
 
 	// Register routes
 	routes.SetupRoutes(app)
