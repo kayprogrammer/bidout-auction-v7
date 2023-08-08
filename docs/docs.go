@@ -463,6 +463,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/schemas.ListingsResponseSchema"
                         }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -488,6 +494,88 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/schemas.ListingDetailResponseSchema"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v7/listings/detail/{slug}/bids": {
+            "get": {
+                "description": "This endpoint retrieves at most 3 bids from a particular listing.",
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Retrieve bids in a listing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Listing Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.BidsResponseSchema"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "This endpoint adds a bid to a particular listing.",
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Add a bid to a listing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Listing Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Bid",
+                        "name": "amount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.CreateBidSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.BidResponseSchema"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -572,6 +660,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.Bid": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.ShortUserData"
+                }
+            }
+        },
         "models.Category": {
             "type": "object",
             "properties": {
@@ -593,6 +692,12 @@ const docTemplate = `{
                 },
                 "auctioneer": {
                     "$ref": "#/definitions/models.ShortUserData"
+                },
+                "bids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Bid"
+                    }
                 },
                 "bids_count": {
                     "type": "integer"
@@ -774,6 +879,52 @@ const docTemplate = `{
                 }
             }
         },
+        "schemas.BidResponseDataSchema": {
+            "type": "object",
+            "properties": {
+                "bids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Bid"
+                    }
+                },
+                "listing": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.BidResponseSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.Bid"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "schemas.BidsResponseSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.BidResponseDataSchema"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
         "schemas.CategoriesResponseSchema": {
             "type": "object",
             "properties": {
@@ -790,6 +941,18 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "success"
+                }
+            }
+        },
+        "schemas.CreateBidSchema": {
+            "type": "object",
+            "required": [
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 1000
                 }
             }
         },

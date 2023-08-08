@@ -201,6 +201,7 @@ func GetCategories(c *fiber.Ctx) error {
 // @Tags Listings
 // @Param slug path string true  "Category Slug"
 // @Success 200 {object} schemas.ListingsResponseSchema
+// @Failure 404 {object} utils.ErrorResponse
 // @Router /api/v7/listings/categories/{slug} [get]
 func GetCategoryListings(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
@@ -240,4 +241,107 @@ func GetCategoryListings(c *fiber.Ctx) error {
 		Data:           listings,
 	}
 	return c.Status(200).JSON(response)
+}
+
+// @Summary Retrieve bids in a listing
+// @Description This endpoint retrieves at most 3 bids from a particular listing.
+// @Tags Listings
+// @Param slug path string true  "Listing Slug"
+// @Success 200 {object} schemas.BidsResponseSchema
+// @Failure 404 {object} utils.ErrorResponse
+// @Router /api/v7/listings/detail/{slug}/bids [get]
+func GetListingBids(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	listingSlug := c.Params("slug")
+
+	listing := models.Listing{}
+	db.Preload("Bids", func(db *gorm.DB) *gorm.DB {
+		return db.Order("updated_at DESC") // Order by updated
+	}).Find(&listing, "slug = ?", listingSlug)
+	if listing.ID == uuid.Nil {
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
+	}
+
+	// Get Bids
+	bids := listing.Bids
+	if len(bids) > 3 {
+		bids = bids[:3]
+	}
+
+	for i := range bids {
+		bids[i] = bids[i].Init(db)
+	}
+
+	response := schemas.BidsResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Listing Bids fetched"}.Init(),
+		Data:           schemas.BidResponseDataSchema{Listing: listing.Name, Bids: bids},
+	}
+	return c.Status(200).JSON(response)
+}
+
+// @Summary Add a bid to a listing
+// @Description This endpoint adds a bid to a particular listing.
+// @Tags Listings
+// @Param slug path string true  "Listing Slug"
+// @Param amount body schemas.CreateBidSchema true "Create Bid"
+// @Success 201 {object} schemas.BidResponseSchema
+// @Failure 422 {object} utils.ErrorResponse
+// @Failure 404 {object} utils.ErrorResponse
+// @Router /api/v7/listings/detail/{slug}/bids [post]
+// @Security BearerAuth
+func CreateBid(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	user := c.Locals("user").(*models.User)
+	listingSlug := c.Params("slug")
+
+	listing := models.Listing{}
+	db.Find(&listing, "slug = ?", listingSlug)
+	if listing.ID == uuid.Nil {
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
+	}
+
+	validator := utils.Validator()
+	createBidData := schemas.CreateBidSchema{}
+	c.BodyParser(&createBidData)
+
+	// Validate request
+	if err := validator.Validate(createBidData); err != nil {
+		return c.Status(422).JSON(err)
+	}
+
+	amount := createBidData.Amount
+	bidsCount := listing.BidsCount
+	if user.ID == listing.AuctioneerId {
+		return c.Status(403).JSON(utils.ErrorResponse{Message: "You cannot bid your own product!"}.Init())
+	} else if !listing.Active {
+		return c.Status(410).JSON(utils.ErrorResponse{Message: "This auction is closed!"}.Init())
+	} else if listing.TimeLeft() < 1 {
+		return c.Status(410).JSON(utils.ErrorResponse{Message: "This auction is expired and closed!"}.Init())
+	} else if amount.Cmp(listing.Price) < 0 {
+		return c.Status(400).JSON(utils.ErrorResponse{Message: "Bid amount cannot be less than the bidding price!"}.Init())
+	} else if amount.Cmp(listing.HighestBid) <= 0 {
+		return c.Status(400).JSON(utils.ErrorResponse{Message: "Bid amount must be more than the highest bid!"}.Init())
+	}
+
+	// Check for existing bid
+	bid := models.Bid{UserId: user.ID, ListingId: listing.ID}
+	db.Where(bid).First(&bid)
+	bid.Amount = amount
+	if bid.ID == uuid.Nil {
+		// New bid
+		bidsCount += 1
+	}
+	// Create or update
+	db.Save(&bid)
+
+	// Update listings
+	listing.BidsCount = bidsCount
+	listing.HighestBid = amount
+	db.Save(&listing)
+
+	response := schemas.BidResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Bid added to listing"}.Init(),
+		Data: bid.Init(db),
+	}
+	return c.Status(201).JSON(response)
 }

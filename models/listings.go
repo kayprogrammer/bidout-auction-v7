@@ -100,6 +100,7 @@ type Listing struct {
 	Watchlist			bool				`json:"watchlist" gorm:"-"`
 	TimeLeftSecs		int64				`json:"time_left_seconds" gorm:"-"`
 
+	Bids				[]Bid				`json:"-"`
 }
 
 // Function to retrieve a listing by slug
@@ -205,7 +206,7 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 type Bid struct {
 	BaseModel
 	UserId				uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id"`
-	UserObj				User				`gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;not null;"`
+	UserObj				User				`json:"-" gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;not null;"`
 	User				ShortUserData		`json:"user" gorm:"-"`
 
 	ListingId			uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id;index:,unique,composite:listing_id_amount"`

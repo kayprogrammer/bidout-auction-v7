@@ -1,13 +1,18 @@
 package schemas
 
 import (
-	"github.com/satori/go.uuid"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
+	"github.com/satori/go.uuid"
+	"github.com/shopspring/decimal"
 )
 
 // REQUEST BODY SCHEMAS
 type AddOrRemoveWatchlistSchema struct {
 	Slug					string					`json:"slug" validate:"required" example:"listing_slug"`
+}
+
+type CreateBidSchema struct {
+	Amount					decimal.Decimal			`json:"amount" validate:"required" example:"1000.00"`
 }
 
 // RESPONSE BODY SCHEMAS
@@ -38,4 +43,19 @@ type AddOrRemoveWatchlistResponseSchema struct {
 type CategoriesResponseSchema struct {
 	ResponseSchema
 	Data					[]models.Category	`json:"data"`
+}
+
+type BidResponseDataSchema struct {
+	Listing					string				`json:"listing"`
+	Bids					[]models.Bid		`json:"bids"`
+}
+
+type BidsResponseSchema struct {
+	ResponseSchema
+	Data					BidResponseDataSchema		`json:"data"`
+}
+
+type BidResponseSchema struct {
+	ResponseSchema
+	Data					models.Bid			`json:"data"`			
 }

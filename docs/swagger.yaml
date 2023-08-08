@@ -1,6 +1,13 @@
 consumes:
 - application/json
 definitions:
+  models.Bid:
+    properties:
+      amount:
+        type: number
+      user:
+        $ref: '#/definitions/models.ShortUserData'
+    type: object
   models.Category:
     properties:
       name:
@@ -16,6 +23,10 @@ definitions:
         type: boolean
       auctioneer:
         $ref: '#/definitions/models.ShortUserData'
+      bids:
+        items:
+          $ref: '#/definitions/models.Bid'
+        type: array
       bids_count:
         type: integer
       category:
@@ -142,6 +153,37 @@ definitions:
     required:
     - slug
     type: object
+  schemas.BidResponseDataSchema:
+    properties:
+      bids:
+        items:
+          $ref: '#/definitions/models.Bid'
+        type: array
+      listing:
+        type: string
+    type: object
+  schemas.BidResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/models.Bid'
+      message:
+        example: Data fetched/created/updated/deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  schemas.BidsResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.BidResponseDataSchema'
+      message:
+        example: Data fetched/created/updated/deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
   schemas.CategoriesResponseSchema:
     properties:
       data:
@@ -154,6 +196,14 @@ definitions:
       status:
         example: success
         type: string
+    type: object
+  schemas.CreateBidSchema:
+    properties:
+      amount:
+        example: 1000
+        type: number
+    required:
+    - amount
     type: object
   schemas.EmailRequestSchema:
     properties:
@@ -604,6 +654,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/schemas.ListingsResponseSchema'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Retrieve all listings by category
       tags:
       - Listings
@@ -622,6 +676,59 @@ paths:
           schema:
             $ref: '#/definitions/schemas.ListingDetailResponseSchema'
       summary: Retrieve listing's detail
+      tags:
+      - Listings
+  /api/v7/listings/detail/{slug}/bids:
+    get:
+      description: This endpoint retrieves at most 3 bids from a particular listing.
+      parameters:
+      - description: Listing Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.BidsResponseSchema'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Retrieve bids in a listing
+      tags:
+      - Listings
+    post:
+      description: This endpoint adds a bid to a particular listing.
+      parameters:
+      - description: Listing Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: Create Bid
+        in: body
+        name: amount
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.CreateBidSchema'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/schemas.BidResponseSchema'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add a bid to a listing
       tags:
       - Listings
   /api/v7/listings/watchlist:
