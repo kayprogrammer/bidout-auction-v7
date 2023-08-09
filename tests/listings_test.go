@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
+	"github.com/shopspring/decimal"
 
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
@@ -201,7 +202,7 @@ func getCategoryListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl stri
 		assert.Equal(t, "failure", body["status"])
 		assert.Equal(t, "Invalid category!", body["message"])
 
-		// Verify that listings by an invalid category slug fails
+		// Verify that listings by a valid category slug succeeds
 		category := models.Category{}
 		db.Find(&category,"id = ?", listing.CategoryId)
 		url = fmt.Sprintf("%s/categories/%s", baseUrl, *category.Slug)
@@ -222,6 +223,110 @@ func getCategoryListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl stri
 	})
 }
 
+func getListingBids(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	// Drop and Create Tables since the previous test uses the listing table it...
+	DropTables(db)
+	CreateTables(db)
+
+	listing := CreateListing(db)
+	anotherVerifiedUser := CreateAnotherTestVerifiedUser(db)
+
+	t.Run("Get Listing Bids", func(t *testing.T) {
+		url := fmt.Sprintf("%s/detail/invalid_listing_slug/bids", baseUrl)
+
+		// Make request
+		req := httptest.NewRequest("GET", url, nil)
+		res, _ := app.Test(req)
+
+		// Verify that bids by an invalid listing slug fails
+		// Assert Status code
+		assert.Equal(t, 404, res.StatusCode)
+
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Invalid listing!", body["message"])
+
+		// Verify that bids by a valid listing slug succeeds
+		bid := models.Bid{UserId: anotherVerifiedUser.ID, ListingId: listing.ID, Amount: decimal.NewFromFloat(2000.00)}
+		db.Create(&bid)
+		url = fmt.Sprintf("%s/detail/%s/bids", baseUrl, *listing.Slug)
+		// Make request
+		req = httptest.NewRequest("GET", url, nil)
+		res, _ = app.Test(req)
+
+		// Assert Status code
+		assert.Equal(t, 200, res.StatusCode)
+
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Listing Bids fetched", body["message"])
+
+		data, _ := json.Marshal(body["data"])
+		assert.Equal(t, true, (len(data) > 0))
+	})
+}
+
+func createBid(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	// Drop and Create Tables since the previous test uses the user table it...
+	DropTables(db)
+	CreateTables(db)
+
+	listing := CreateListing(db)
+	anotherVerifiedUser := CreateAnotherTestVerifiedUser(db)
+
+	t.Run("Create Bid", func(t *testing.T) {
+
+		url := fmt.Sprintf("%s/detail/invalid_listing_slug/bids", baseUrl)
+		createBidData := schemas.CreateBidSchema{
+			Amount: decimal.NewFromFloat(2000.00),
+		}
+		jwt := CreateJwt(db, listing.AuctioneerId)
+		res := ProcessTestBody(t, app, url, "POST", createBidData, jwt.Access)
+
+		// Test for invalid slug
+		// Assert Status code
+		assert.Equal(t, 404, res.StatusCode)
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Listing does not exist!", body["message"])
+
+		url = fmt.Sprintf("%s/detail/%s/bids", baseUrl, *listing.Slug)
+		// Test for invalid user
+		res = ProcessTestBody(t, app, url, "POST", createBidData, jwt.Access)		
+		assert.Equal(t, 403, res.StatusCode) // Assert Status code
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "You cannot bid your own product!", body["message"])
+
+		// Test for failure for lesser bidding price
+		createBidData.Amount = decimal.NewFromFloat(200.00)
+		jwt = CreateJwt(db, anotherVerifiedUser.ID)
+		res = ProcessTestBody(t, app, url, "POST", createBidData, jwt.Access)
+		// Assert Status code		
+		assert.Equal(t, 400, res.StatusCode)
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Bid amount cannot be less than the bidding price!", body["message"])
+
+		// Verify that the bid was created successfully
+		createBidData.Amount = decimal.NewFromFloat(2000.00)
+		res = ProcessTestBody(t, app, url, "POST", createBidData, jwt.Access)
+		// Assert response
+		assert.Equal(t, 201, res.StatusCode)
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Bid added to listing", body["message"])
+
+		// You can also test for other error responses.....
+	})
+}
+
 func TestListing(t *testing.T) {
 	app := fiber.New()
 	db := Setup(t, app)
@@ -234,6 +339,8 @@ func TestListing(t *testing.T) {
 	createOrRemoveUserWatchlistsListing(t, app, db, BASEURL)
 	getCategories(t, app, db, BASEURL)
 	getCategoryListings(t, app, db, BASEURL)
+	getListingBids(t, app, db, BASEURL)
+	createBid(t, app, db, BASEURL)
 
 	// Drop Tables and Close Connectiom
 	DropTables(db)

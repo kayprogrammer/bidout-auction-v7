@@ -261,7 +261,7 @@ func GetListingBids(c *fiber.Ctx) error {
 		return db.Order("updated_at DESC").Limit(3) // Order by updated
 	}).Find(&listing, "slug = ?", listingSlug)
 	if listing.ID == uuid.Nil {
-		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Invalid listing!"}.Init())
 	}
 
 	// Get Bids
