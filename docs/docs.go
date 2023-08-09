@@ -693,12 +693,6 @@ const docTemplate = `{
                 "auctioneer": {
                     "$ref": "#/definitions/models.ShortUserData"
                 },
-                "bids": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Bid"
-                    }
-                },
                 "bids_count": {
                     "type": "integer"
                 },

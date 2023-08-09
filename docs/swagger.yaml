@@ -23,10 +23,6 @@ definitions:
         type: boolean
       auctioneer:
         $ref: '#/definitions/models.ShortUserData'
-      bids:
-        items:
-          $ref: '#/definitions/models.Bid'
-        type: array
       bids_count:
         type: integer
       category:

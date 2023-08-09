@@ -89,8 +89,8 @@ type Listing struct {
 
 	Active				bool				`json:"active" gorm:"default:true"`
 	Price				decimal.Decimal		`json:"price" gorm:"default:0"`
-	HighestBid			decimal.Decimal		`json:"highest_bid" gorm:"default:0.00"`
-	BidsCount			uint64				`json:"bids_count" gorm:"default:0"`
+	HighestBid			decimal.Decimal		`json:"highest_bid" gorm:"-"`
+	BidsCount			int					`json:"bids_count" gorm:"-"`
 	ClosingDate			time.Time			`json:"closing_date" gorm:"not null"`
 
 	ImageId				uuid.UUID			`json:"-" gorm:"not null"`
@@ -197,6 +197,13 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 	}
 	listing.ClosingDate = listing.ClosingDate.UTC()
 	listing.TimeLeftSecs = listing.TimeLeftSeconds()
+
+	bidsLength := len(listing.Bids)
+	listing.BidsCount = bidsLength
+	listing.HighestBid, _ = decimal.NewFromString("0.00")
+	if bidsLength > 0 {
+		listing.HighestBid = listing.Bids[0].Amount
+	}
 	return listing
 }
 

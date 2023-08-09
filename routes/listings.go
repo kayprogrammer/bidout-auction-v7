@@ -8,6 +8,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"github.com/shopspring/decimal"
 )
 
 // @Summary Retrieve all listings
@@ -292,10 +293,18 @@ func CreateBid(c *fiber.Ctx) error {
 	user := c.Locals("user").(*models.User)
 	listingSlug := c.Params("slug")
 
+	// Get Listing
 	listing := models.Listing{}
-	db.Find(&listing, "slug = ?", listingSlug)
+	db.Preload("Bids", func(db *gorm.DB) *gorm.DB {
+		return db.Order("updated_at DESC").Limit(3) // Order by updated
+	}).Find(&listing, "slug = ?", listingSlug)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
+	}
+	bidsLength := len(listing.Bids)
+	highestBid, _ := decimal.NewFromString("0.00")
+	if bidsLength > 0 {
+		highestBid = listing.Bids[0].Amount
 	}
 
 	validator := utils.Validator()
@@ -308,7 +317,6 @@ func CreateBid(c *fiber.Ctx) error {
 	}
 
 	amount := createBidData.Amount
-	bidsCount := listing.BidsCount
 	if user.ID == listing.AuctioneerId {
 		return c.Status(403).JSON(utils.ErrorResponse{Message: "You cannot bid your own product!"}.Init())
 	} else if !listing.Active {
@@ -317,25 +325,17 @@ func CreateBid(c *fiber.Ctx) error {
 		return c.Status(410).JSON(utils.ErrorResponse{Message: "This auction is expired and closed!"}.Init())
 	} else if amount.Cmp(listing.Price) < 0 {
 		return c.Status(400).JSON(utils.ErrorResponse{Message: "Bid amount cannot be less than the bidding price!"}.Init())
-	} else if amount.Cmp(listing.HighestBid) <= 0 {
+	} else if amount.Cmp(highestBid) <= 0 {
 		return c.Status(400).JSON(utils.ErrorResponse{Message: "Bid amount must be more than the highest bid!"}.Init())
 	}
 
 	// Check for existing bid
 	bid := models.Bid{UserId: user.ID, ListingId: listing.ID}
 	db.Where(bid).First(&bid)
-	bid.Amount = amount
-	if bid.ID == uuid.Nil {
-		// New bid
-		bidsCount += 1
-	}
-	// Create or update
-	db.Save(&bid)
 
-	// Update listings
-	listing.BidsCount = bidsCount
-	listing.HighestBid = amount
-	db.Save(&listing)
+	// Create or update
+	bid.Amount = amount
+	db.Save(&bid)
 
 	response := schemas.BidResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Bid added to listing"}.Init(),
