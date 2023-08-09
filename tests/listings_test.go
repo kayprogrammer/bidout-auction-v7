@@ -156,6 +156,72 @@ func createOrRemoveUserWatchlistsListing(t *testing.T, app *fiber.App, db *gorm.
 	})
 }
 
+func getCategories(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	// Since our previous test already makes use of a category, then category exists in our db
+
+	t.Run("Get Categories", func(t *testing.T) {
+		url := fmt.Sprintf("%s/categories", baseUrl)
+
+		// Make request
+		req := httptest.NewRequest("GET", url, nil)
+		res, _ := app.Test(req)
+
+		// Assert Status code
+		assert.Equal(t, 200, res.StatusCode)
+
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Categories fetched", body["message"])
+
+		data, _ := json.Marshal(body["data"])
+		assert.Equal(t, true, (len(data) > 0))
+	})
+}
+
+func getCategoryListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
+	// Drop and Create Tables since the previous test uses the listing table it...
+	DropTables(db)
+	CreateTables(db)
+
+	listing := CreateListing(db)
+	t.Run("Get Category Listings", func(t *testing.T) {
+		url := fmt.Sprintf("%s/categories/invalid_category_slug", baseUrl)
+
+		// Make request
+		req := httptest.NewRequest("GET", url, nil)
+		res, _ := app.Test(req)
+
+		// Verify that listings by an invalid category slug fails
+		// Assert Status code
+		assert.Equal(t, 404, res.StatusCode)
+
+		// Parse and assert body
+		body := ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "failure", body["status"])
+		assert.Equal(t, "Invalid category!", body["message"])
+
+		// Verify that listings by an invalid category slug fails
+		category := models.Category{}
+		db.Find(&category,"id = ?", listing.CategoryId)
+		url = fmt.Sprintf("%s/categories/%s", baseUrl, *category.Slug)
+		// Make request
+		req = httptest.NewRequest("GET", url, nil)
+		res, _ = app.Test(req)
+
+		// Assert Status code
+		assert.Equal(t, 200, res.StatusCode)
+
+		// Parse and assert body
+		body = ParseResponseBody(t, res.Body).(map[string]interface{})
+		assert.Equal(t, "success", body["status"])
+		assert.Equal(t, "Category Listings fetched", body["message"])
+
+		data, _ := json.Marshal(body["data"])
+		assert.Equal(t, true, (len(data) > 0))
+	})
+}
+
 func TestListing(t *testing.T) {
 	app := fiber.New()
 	db := Setup(t, app)
@@ -166,6 +232,8 @@ func TestListing(t *testing.T) {
 	getListing(t, app, db, BASEURL)
 	getWatchlistListings(t, app, db, BASEURL)
 	createOrRemoveUserWatchlistsListing(t, app, db, BASEURL)
+	getCategories(t, app, db, BASEURL)
+	getCategoryListings(t, app, db, BASEURL)
 
 	// Drop Tables and Close Connectiom
 	DropTables(db)

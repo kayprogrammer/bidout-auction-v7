@@ -218,7 +218,7 @@ func GetCategoryListings(c *fiber.Ctx) error {
 		category := models.Category{}
 		db.First(&category, "slug = ?", categorySlug)
 		if category.ID == uuid.Nil {
-			return c.Status(404).JSON(utils.ErrorResponse{Message: "Category does not exist!"}.Init())
+			return c.Status(404).JSON(utils.ErrorResponse{Message: "Invalid category!"}.Init())
 		}
 		categoryId = &category.ID
 	}
