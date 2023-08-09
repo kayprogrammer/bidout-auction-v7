@@ -154,13 +154,16 @@ func ParseResponseBody(t *testing.T, b io.ReadCloser) interface{} {
 }
 
 
-func ProcessTestBody(t *testing.T, app *fiber.App, url string, method string, body interface{} ) *http.Response {
+func ProcessTestBody(t *testing.T, app *fiber.App, url string, method string, body interface{}, access ...string ) *http.Response {
 	// Marshal the test data to JSON
 	requestBytes, err := json.Marshal(body)
 	requestBody := bytes.NewReader(requestBytes)
 	assert.Nil(t, err)
 	req := httptest.NewRequest(method, url, requestBody)
 	req.Header.Set("Content-Type", "application/json")
+	if access != nil {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access[0]))
+	}
 	res, err := app.Test(req)
 	if err != nil {
 		log.Println(err)

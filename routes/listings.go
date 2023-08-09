@@ -8,7 +8,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"github.com/shopspring/decimal"
 )
 
 // @Summary Retrieve all listings
@@ -296,16 +295,12 @@ func CreateBid(c *fiber.Ctx) error {
 	// Get Listing
 	listing := models.Listing{}
 	db.Preload("Bids", func(db *gorm.DB) *gorm.DB {
-		return db.Order("updated_at DESC").Limit(3) // Order by updated
+		return db.Order("updated_at DESC").Limit(1) // Order by updated (Latest bid is surely the highest bid)
 	}).Find(&listing, "slug = ?", listingSlug)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
 	}
-	bidsLength := len(listing.Bids)
-	highestBid, _ := decimal.NewFromString("0.00")
-	if bidsLength > 0 {
-		highestBid = listing.Bids[0].Amount
-	}
+	highestBid := listing.GetHighestBid()
 
 	validator := utils.Validator()
 	createBidData := schemas.CreateBidSchema{}

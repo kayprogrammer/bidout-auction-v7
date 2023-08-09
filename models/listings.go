@@ -169,6 +169,21 @@ func (listing Listing) TimeLeft() int64 {
 	return listing.TimeLeftSeconds()
 }
 
+func (listing Listing) GetHighestBid() decimal.Decimal {
+	bids := listing.Bids
+	bidsLength := len(bids)
+	highestAmount := decimal.NewFromFloat(0.00)
+	if bidsLength > 0 {
+		highestAmount = bids[0].Amount
+		for _, bid := range bids {
+			if bid.Amount.GreaterThan(highestAmount) {
+				highestAmount = bid.Amount
+			}
+		}
+	}
+	return highestAmount 
+}
+
 func (listing Listing) Init(db *gorm.DB) Listing {
 	listing.Auctioneer.Name = listing.AuctioneerObj.FullName()
 
@@ -198,12 +213,8 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 	listing.ClosingDate = listing.ClosingDate.UTC()
 	listing.TimeLeftSecs = listing.TimeLeftSeconds()
 
-	bidsLength := len(listing.Bids)
-	listing.BidsCount = bidsLength
-	listing.HighestBid, _ = decimal.NewFromString("0.00")
-	if bidsLength > 0 {
-		listing.HighestBid = listing.Bids[0].Amount
-	}
+	listing.BidsCount = len(listing.Bids)
+	listing.HighestBid = listing.GetHighestBid()
 	return listing
 }
 
