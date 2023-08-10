@@ -42,6 +42,43 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "This endpoint updates an authenticated user's profile. Note: use the returned upload_url to upload avatar to cloudinary",
+                "tags": [
+                    "Auctioneer"
+                ],
+                "summary": "Update Profile",
+                "parameters": [
+                    {
+                        "description": "Update User",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.UpdateProfileSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.UpdateProfileResponseSchema"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v7/auth/login": {
@@ -1198,6 +1235,60 @@ const docTemplate = `{
                 }
             }
         },
+        "schemas.UpdateProfileResponseDataSchema": {
+            "type": "object",
+            "properties": {
+                "file_upload_data": {
+                    "$ref": "#/definitions/utils.SignatureFormat"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                }
+            }
+        },
+        "schemas.UpdateProfileResponseSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.UpdateProfileResponseDataSchema"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "schemas.UpdateProfileSchema": {
+            "type": "object",
+            "required": [
+                "file_type",
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "file_type": {
+                    "type": "string",
+                    "example": "image/png"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                }
+            }
+        },
         "schemas.VerifyEmailRequestSchema": {
             "type": "object",
             "required": [
@@ -1230,6 +1321,23 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "utils.SignatureFormat": {
+            "type": "object",
+            "properties": {
+                "public_id": {
+                    "type": "string",
+                    "example": "images/f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                },
+                "signature": {
+                    "type": "string",
+                    "example": "e1ba4683fbbf90b75ca22e9f8e545b18c6b24eae"
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1678828200
                 }
             }
         }

@@ -34,9 +34,9 @@ func init() {
 }
 
 type SignatureFormat struct {
-	PublicId  string `json:"public_id"`
-	Signature string `json:"signature"`
-	Timestamp int64  `json:"timestamp"`
+	PublicId  string `json:"public_id" example:"images/f47ac10b-58cc-4372-a567-0e02b2c3d479"`
+	Signature string `json:"signature" example:"e1ba4683fbbf90b75ca22e9f8e545b18c6b24eae"`
+	Timestamp int64  `json:"timestamp" example:"1678828200"`
 }
 
 var ImageExtensions = map[string]string{
@@ -46,21 +46,6 @@ var ImageExtensions = map[string]string{
 	"image/bmp":  "bmp",
 	"image/webp": "webp",
 	"image/tiff": "tiff",
-}
-
-func retrieveSignatureFromUrl(signedUrl string) string {
-	// Parse the signed URL
-	parsedURL, err := url.Parse(signedUrl)
-	if err != nil {
-		log.Fatal("Error parsing URL:", err)
-	}
-
-	// Extract query parameters
-	queryParams, err := url.ParseQuery(parsedURL.RawQuery)
-	if err != nil {
-		log.Fatal("Error parsing query parameters:", err)
-	}
-	return queryParams.Get("signature")
 }
 
 func GenerateFileSignature(key string, folder string) SignatureFormat {
@@ -80,9 +65,7 @@ func GenerateFileSignature(key string, folder string) SignatureFormat {
 	if err != nil {
 		log.Fatal("Error signing params: ", err)
 	}
-
-	signature := retrieveSignatureFromUrl(resp)
-	signatureResp := SignatureFormat{PublicId: key, Signature: signature, Timestamp: timestamp}
+	signatureResp := SignatureFormat{PublicId: key, Signature: resp, Timestamp: timestamp}
 	return signatureResp
 }
 

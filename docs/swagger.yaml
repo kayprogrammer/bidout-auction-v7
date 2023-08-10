@@ -357,6 +357,44 @@ definitions:
         example: success
         type: string
     type: object
+  schemas.UpdateProfileResponseDataSchema:
+    properties:
+      file_upload_data:
+        $ref: '#/definitions/utils.SignatureFormat'
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+    type: object
+  schemas.UpdateProfileResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UpdateProfileResponseDataSchema'
+      message:
+        example: Data fetched/created/updated/deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  schemas.UpdateProfileSchema:
+    properties:
+      file_type:
+        example: image/png
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+    required:
+    - file_type
+    - first_name
+    - last_name
+    type: object
   schemas.VerifyEmailRequestSchema:
     properties:
       email:
@@ -381,6 +419,18 @@ definitions:
       status:
         type: string
     type: object
+  utils.SignatureFormat:
+    properties:
+      public_id:
+        example: images/f47ac10b-58cc-4372-a567-0e02b2c3d479
+        type: string
+      signature:
+        example: e1ba4683fbbf90b75ca22e9f8e545b18c6b24eae
+        type: string
+      timestamp:
+        example: 1678828200
+        type: integer
+    type: object
 info:
   contact: {}
   description: A simple bidding API built with Fiber
@@ -398,6 +448,30 @@ paths:
       security:
       - BearerAuth: []
       summary: Get Profile
+      tags:
+      - Auctioneer
+    put:
+      description: 'This endpoint updates an authenticated user''s profile. Note:
+        use the returned upload_url to upload avatar to cloudinary'
+      parameters:
+      - description: Update User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.UpdateProfileSchema'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.UpdateProfileResponseSchema'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Profile
       tags:
       - Auctioneer
   /api/v7/auth/login:

@@ -46,6 +46,15 @@ func (user User) GetAvatarUrl(db *gorm.DB) *string {
 	return nil
 }
 
+func (user User) GetAvatarUploadUrl(db *gorm.DB) *utils.SignatureFormat {
+	avatarId := user.AvatarId
+	if avatarId != nil {
+		uploadData := utils.GenerateFileSignature(avatarId.String(), "avatars")
+		return &uploadData
+	}
+	return nil
+}
+
 type GuestUser struct {
 	BaseModel
 }
