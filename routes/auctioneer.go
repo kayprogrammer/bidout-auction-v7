@@ -6,6 +6,7 @@ import (
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var fileTypes = []string{
@@ -98,6 +99,36 @@ func UpdateProfile(c *fiber.Ctx) error {
 	response := schemas.UpdateProfileResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "User updated!"}.Init(),
 		Data:           userData,
+	}
+	return c.Status(200).JSON(response)
+}
+
+// @Summary Retrieve all listings by the current user
+// @Description This endpoint retrieves all listings by the current user.
+// @Tags Auctioneer
+// @Param quantity query int false  "Listings Quantity"
+// @Success 200 {object} schemas.ListingsResponseSchema
+// @Router /api/v7/auctioneer/listings [get]
+// @Security BearerAuth
+func GetAuctioneerListings(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	user := c.Locals("user").(*models.User)
+
+	listings := []models.Listing{}
+	quantity := c.QueryInt("quantity")
+	// Get listings
+	db.Preload(clause.Associations).Order("created_at DESC").Find(&listings,"auctioneer_id = ?", user.ID)
+
+	// Initialize each listing object in the slice
+	for i := range listings {
+		listings[i] = listings[i].Init(db)
+	}
+	if quantity > 0 {
+		listings = listings[:quantity]
+	}
+	response := schemas.ListingsResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Auctioneer Listings fetched"}.Init(),
+		Data:           listings,
 	}
 	return c.Status(200).JSON(response)
 }

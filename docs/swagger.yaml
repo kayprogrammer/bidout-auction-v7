@@ -391,7 +391,6 @@ definitions:
         example: Doe
         type: string
     required:
-    - file_type
     - first_name
     - last_name
     type: object
@@ -472,6 +471,24 @@ paths:
       security:
       - BearerAuth: []
       summary: Update Profile
+      tags:
+      - Auctioneer
+  /api/v7/auctioneer/listings:
+    get:
+      description: This endpoint retrieves all listings by the current user.
+      parameters:
+      - description: Listings Quantity
+        in: query
+        name: quantity
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListingsResponseSchema'
+      security:
+      - BearerAuth: []
+      summary: Retrieve all listings by the current user
       tags:
       - Auctioneer
   /api/v7/auth/login:

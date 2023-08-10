@@ -81,6 +81,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v7/auctioneer/listings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "This endpoint retrieves all listings by the current user.",
+                "tags": [
+                    "Auctioneer"
+                ],
+                "summary": "Retrieve all listings by the current user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Listings Quantity",
+                        "name": "quantity",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ListingsResponseSchema"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v7/auth/login": {
             "post": {
                 "security": [
@@ -1270,7 +1300,6 @@ const docTemplate = `{
         "schemas.UpdateProfileSchema": {
             "type": "object",
             "required": [
-                "file_type",
                 "first_name",
                 "last_name"
             ],
