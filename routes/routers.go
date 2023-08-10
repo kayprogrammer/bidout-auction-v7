@@ -38,8 +38,7 @@ func SetupRoutes(app *fiber.App) {
 	listingsRouter.Get("/detail/:slug/bids", GetListingBids)
 	listingsRouter.Post("/detail/:slug/bids", midw.AuthMiddleware, CreateBid)
 
-	// // Auctioneer Routes
-	// auctioneerRouter := api.Group("/auctioneer")
-
-
+	// Auctioneer Routes
+	auctioneerRouter := api.Group("/auctioneer")
+	auctioneerRouter.Get("", midw.AuthMiddleware, GetProfile)
 }

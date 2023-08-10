@@ -35,6 +35,17 @@ func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
+func (user User) GetAvatarUrl(db *gorm.DB) *string {
+	avatarId := user.AvatarId
+	if avatarId != nil {
+		avatar := File{}
+		db.Find(&avatar,"id = ?", avatarId)
+		url := utils.GenerateFileUrl(avatarId.String(), "avatars", avatar.ResourceType)
+		return &url
+	}
+	return nil
+}
+
 type GuestUser struct {
 	BaseModel
 }

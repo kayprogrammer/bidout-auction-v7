@@ -255,6 +255,26 @@ definitions:
     - email
     - password
     type: object
+  schemas.ProfileResponseDataSchema:
+    properties:
+      avatar:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+    type: object
+  schemas.ProfileResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.ProfileResponseDataSchema'
+      message:
+        example: Data fetched/created/updated/deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
   schemas.RefreshTokenSchema:
     properties:
       refresh:
@@ -367,6 +387,19 @@ info:
   title: Bidout Auction API
   version: "7.0"
 paths:
+  /api/v7/auctioneer:
+    get:
+      description: This endpoint gets the current user's profile.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ProfileResponseSchema'
+      security:
+      - BearerAuth: []
+      summary: Get Profile
+      tags:
+      - Auctioneer
   /api/v7/auth/login:
     post:
       description: This endpoint generates new access and refresh tokens for authentication
