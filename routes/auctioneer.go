@@ -1,10 +1,13 @@
 package routes
 
 import (
+	"encoding/json"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
+	"github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -131,4 +134,85 @@ func GetAuctioneerListings(c *fiber.Ctx) error {
 		Data:           listings,
 	}
 	return c.Status(200).JSON(response)
+}
+
+// @Summary Create a listing
+// @Description This endpoint creates a new listing. Note: Use the returned upload_url to upload image to cloudinary
+// @Tags Auctioneer
+// @Param listing body schemas.CreateListingSchema true "Create Listing"
+// @Success 200 {object} schemas.CreateListingResponseSchema
+// @Failure 422 {object} utils.ErrorResponse
+// @Router /api/v7/auctioneer/listings [post]
+// @Security BearerAuth
+func CreateListing(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	user := c.Locals("user").(*models.User)
+	validator := utils.Validator()
+
+	createListingData := schemas.CreateListingSchema{}
+	if err := json.Unmarshal(c.Body(), &createListingData); err != nil {
+		data := map[string]string{
+			"closing_date": "Invalid date format!",
+		}
+		return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
+	}
+
+	// Validate request
+	if err := validator.Validate(createListingData); err != nil {
+		return c.Status(422).JSON(err)
+	}
+	var categoryId *uuid.UUID
+	categorySlug := createListingData.Category
+	// Validate Category
+	if categorySlug != "other" {
+		category := models.Category{}
+		db.First(&category, "slug = ?", categorySlug)
+		if category.ID == uuid.Nil {
+			return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid category!"}.Init())
+		}
+		categoryId = &category.ID
+
+	} else {
+		categoryId = nil
+	}
+	fileType := createListingData.FileType
+	// Validate file type
+	fileTypeFound := false
+	for _, value := range fileTypes {
+		if value == fileType {
+			fileTypeFound = true
+			break
+		}
+	}
+	if !fileTypeFound {
+		data := map[string]string{
+			"file_type": "Invalid file type!",
+		}
+		return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
+	}
+	file := models.File{ResourceType: fileType}
+	db.Create(&file)
+
+	listing := models.Listing{
+		AuctioneerId: user.ID,
+		Name: createListingData.Name,
+		Desc: createListingData.Desc,
+		CategoryId: categoryId,
+		Active: true,
+		Price: createListingData.Price,
+		ClosingDate: createListingData.ClosingDate.UTC(),
+		ImageId: file.ID,
+	}
+	db.Create(&listing)
+	db.Preload(clause.Associations).First(&listing, listing.ID)
+
+	listingData := schemas.CreateListingResponseDataSchema{
+		Listing: listing.Init(db),
+		FileUploadData: listing.GetImageUploadData(db),
+	}
+	response := schemas.CreateListingResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Listing created successfully"}.Init(),
+		Data:           listingData,
+	}
+	return c.Status(201).JSON(response)
 }

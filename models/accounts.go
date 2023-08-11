@@ -26,8 +26,7 @@ type User struct {
 }
 
 func (user User) FullName() string {
-	fullName := "%s %s"
-	return fmt.Sprintf(fullName, user.FirstName, user.LastName)
+	return fmt.Sprintf("%s %s", user.FirstName, user.LastName)
 }
 
 func (user *User) BeforeCreate(tx *gorm.DB) (err error) {

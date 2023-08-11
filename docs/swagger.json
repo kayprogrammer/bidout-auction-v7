@@ -100,6 +100,43 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "This endpoint creates a new listing. Note: Use the returned upload_url to upload image to cloudinary",
+                "tags": [
+                    "Auctioneer"
+                ],
+                "summary": "Create a listing",
+                "parameters": [
+                    {
+                        "description": "Create Listing",
+                        "name": "listing",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.CreateListingSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.CreateListingResponseSchema"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v7/auth/login": {
@@ -1025,6 +1062,107 @@
             ],
             "properties": {
                 "amount": {
+                    "type": "number",
+                    "example": 1000
+                }
+            }
+        },
+        "schemas.CreateListingResponseDataSchema": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "auctioneer": {
+                    "$ref": "#/definitions/models.ShortUserData"
+                },
+                "bids_count": {
+                    "type": "integer"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "closing_date": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "file_upload_data": {
+                    "$ref": "#/definitions/utils.SignatureFormat"
+                },
+                "highest_bid": {
+                    "type": "number"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "time_left_seconds": {
+                    "type": "integer"
+                },
+                "watchlist": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "schemas.CreateListingResponseSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.CreateListingResponseDataSchema"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Data fetched/created/updated/deleted"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "schemas.CreateListingSchema": {
+            "type": "object",
+            "required": [
+                "category",
+                "closing_date",
+                "desc",
+                "file_type",
+                "name",
+                "price"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "example": "category_slug"
+                },
+                "closing_date": {
+                    "type": "string",
+                    "example": "2006-01-02T15:04:05.000Z"
+                },
+                "desc": {
+                    "type": "string",
+                    "example": "Product description"
+                },
+                "file_type": {
+                    "type": "string",
+                    "example": "image/jpeg"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 70,
+                    "example": "Product name"
+                },
+                "price": {
                     "type": "number",
                     "example": 1000
                 }

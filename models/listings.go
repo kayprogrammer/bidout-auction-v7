@@ -218,6 +218,11 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 	return listing
 }
 
+func (listing Listing) GetImageUploadData(db *gorm.DB) utils.SignatureFormat {
+	imageId := listing.ImageId
+	uploadData := utils.GenerateFileSignature(imageId.String(), "listings")
+	return uploadData
+}
 // ---------------------------------------------------------------
 
 // BID

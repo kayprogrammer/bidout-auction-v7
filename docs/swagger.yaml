@@ -201,6 +201,77 @@ definitions:
     required:
     - amount
     type: object
+  schemas.CreateListingResponseDataSchema:
+    properties:
+      active:
+        type: boolean
+      auctioneer:
+        $ref: '#/definitions/models.ShortUserData'
+      bids_count:
+        type: integer
+      category:
+        type: string
+      closing_date:
+        type: string
+      desc:
+        type: string
+      file_upload_data:
+        $ref: '#/definitions/utils.SignatureFormat'
+      highest_bid:
+        type: number
+      image:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      slug:
+        type: string
+      time_left_seconds:
+        type: integer
+      watchlist:
+        type: boolean
+    type: object
+  schemas.CreateListingResponseSchema:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.CreateListingResponseDataSchema'
+      message:
+        example: Data fetched/created/updated/deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  schemas.CreateListingSchema:
+    properties:
+      category:
+        example: category_slug
+        type: string
+      closing_date:
+        example: "2006-01-02T15:04:05.000Z"
+        type: string
+      desc:
+        example: Product description
+        type: string
+      file_type:
+        example: image/jpeg
+        type: string
+      name:
+        example: Product name
+        maxLength: 70
+        type: string
+      price:
+        example: 1000
+        type: number
+    required:
+    - category
+    - closing_date
+    - desc
+    - file_type
+    - name
+    - price
+    type: object
   schemas.EmailRequestSchema:
     properties:
       email:
@@ -489,6 +560,30 @@ paths:
       security:
       - BearerAuth: []
       summary: Retrieve all listings by the current user
+      tags:
+      - Auctioneer
+    post:
+      description: 'This endpoint creates a new listing. Note: Use the returned upload_url
+        to upload image to cloudinary'
+      parameters:
+      - description: Create Listing
+        in: body
+        name: listing
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.CreateListingSchema'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.CreateListingResponseSchema'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a listing
       tags:
       - Auctioneer
   /api/v7/auth/login:
