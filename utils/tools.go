@@ -1,10 +1,11 @@
 package utils
 
 import (
+	r "crypto/rand"
 	"encoding/base64"
 	"math/rand"
-	r "crypto/rand"
 	"time"
+	"reflect"
 )
 
 func GetRandomString(length int) string {
@@ -59,3 +60,19 @@ func KeysExistInMap(keys []string, myMap map[string]interface{}) bool {
     }
     return true
 }
+
+func AssignFields(src interface{}, dest interface{}) {
+	srcValue := reflect.ValueOf(src)
+	destValue := reflect.ValueOf(dest).Elem()
+	for i := 0; i < srcValue.NumField(); i++ {
+		srcField := srcValue.Field(i)
+
+		if !srcField.IsNil() && srcField.Kind() == reflect.Ptr {
+			destField := destValue.FieldByName(srcValue.Type().Field(i).Name)
+			if destField.IsValid() {
+				destField.Set(srcField.Elem())
+			}
+		}
+	}
+}
+

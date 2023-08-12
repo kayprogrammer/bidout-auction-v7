@@ -216,3 +216,94 @@ func CreateListing(c *fiber.Ctx) error {
 	}
 	return c.Status(201).JSON(response)
 }
+
+// @Summary Update a listing
+// @Description This endpoint updates a particular listing. Note: Use the returned upload_url to upload image to cloudinary
+// @Tags Auctioneer
+// @Param slug path string true  "Listing Slug"
+// @Param listing body schemas.UpdateListingSchema true "Update Listing"
+// @Success 200 {object} schemas.CreateListingResponseSchema
+// @Failure 422 {object} utils.ErrorResponse
+// @Router /api/v7/auctioneer/listings/{slug} [patch]
+// @Security BearerAuth
+func UpdateListing(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	user := c.Locals("user").(*models.User)
+	validator := utils.Validator()
+
+	listing := models.Listing{}
+	listingSlug := c.Params("slug")
+	db.First(&listing, "slug = ?", listingSlug)
+	if listing.ID == uuid.Nil {
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Invalid listing!"}.Init())
+	}
+
+	if listing.AuctioneerId != user.ID {
+		return c.Status(400).JSON(utils.ErrorResponse{Message: "This listing doesn't belong to you!"}.Init())
+	}
+
+	updateListingData := schemas.UpdateListingSchema{}
+	if err := json.Unmarshal(c.Body(), &updateListingData); err != nil {
+		data := map[string]string{
+			"closing_date": "Invalid date format!",
+		}
+		return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
+	}
+
+	// Validate request
+	if err := validator.Validate(updateListingData); err != nil {
+		return c.Status(422).JSON(err)
+	}
+	categorySlug := updateListingData.Category
+	if categorySlug != nil {
+		// Validate Category
+		other := "other"
+		if categorySlug != &other {
+			category := models.Category{}
+			db.First(&category, "slug = ?", categorySlug)
+			if category.ID == uuid.Nil {
+				return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid category!"}.Init())
+			}
+			listing.CategoryId = &category.ID
+
+		} else {
+			listing.CategoryId = nil
+		}
+	}
+	
+	fileType := updateListingData.FileType
+	if fileType != nil {
+		// Validate file type
+		fileTypeFound := false
+		for _, value := range fileTypes {
+			if value == *fileType {
+				fileTypeFound = true
+				break
+			}
+		}
+		if !fileTypeFound {
+			data := map[string]string{
+				"file_type": "Invalid file type!",
+			}
+			return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
+		}
+		file := models.File{ResourceType: *fileType}
+		db.Model(models.File{}).Where("id = ?", listing.ImageId).Updates(&file)
+	}
+	
+	// Assign data to listing
+	utils.AssignFields(updateListingData, &listing)
+	db.Save(&listing)
+	db.Preload(clause.Associations).First(&listing, listing.ID)
+
+	listingData := schemas.CreateListingResponseDataSchema{
+		Listing: listing.Init(db),
+		FileUploadData: listing.GetImageUploadData(db),
+	}
+	response := schemas.CreateListingResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Listing updated successfully"}.Init(),
+		Data:           listingData,
+	}
+	return c.Status(200).JSON(response)
+}
+

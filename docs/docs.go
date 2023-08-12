@@ -148,6 +148,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v7/auctioneer/listings/{slug}": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "This endpoint updates a particular listing. Note: Use the returned upload_url to upload image to cloudinary",
+                "tags": [
+                    "Auctioneer"
+                ],
+                "summary": "Update a listing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Listing Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Listing",
+                        "name": "listing",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.UpdateListingSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.CreateListingResponseSchema"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v7/auth/login": {
             "post": {
                 "security": [
@@ -1400,6 +1446,40 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "success"
+                }
+            }
+        },
+        "schemas.UpdateListingSchema": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "category": {
+                    "type": "string",
+                    "example": "category_slug"
+                },
+                "closing_date": {
+                    "type": "string",
+                    "example": "2006-01-02T15:04:05.000Z"
+                },
+                "desc": {
+                    "type": "string",
+                    "example": "Product description"
+                },
+                "file_type": {
+                    "type": "string",
+                    "example": "image/jpeg"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 70,
+                    "example": "Product name"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 1000
                 }
             }
         },

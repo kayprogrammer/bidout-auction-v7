@@ -85,7 +85,7 @@ type Listing struct {
 
 	CategoryId			*uuid.UUID			`json:"-" gorm:"null"`
 	CategoryObj			*Category			`json:"-" gorm:"foreignKey:CategoryId;constraint:OnDelete:SET NULL;null"`
-	Category			*string				`json:"category" gorm:"-"`
+	Category			string				`json:"category" gorm:"-"`
 
 	Active				bool				`json:"active" gorm:"default:true"`
 	Price				decimal.Decimal		`json:"price" gorm:"default:0"`
@@ -204,7 +204,11 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 
 	listing.Price = listing.Price.Round(2)
 	listing.HighestBid = listing.HighestBid.Round(2)
-	listing.Category = &listing.CategoryObj.Name
+	if listing.CategoryId != nil {
+		listing.Category = listing.CategoryObj.Name
+	} else {
+		listing.Category = "Other"
+	}
 	if listing.Active && (listing.TimeLeftSeconds() > 0) {
 		listing.Active = true
 	} else {

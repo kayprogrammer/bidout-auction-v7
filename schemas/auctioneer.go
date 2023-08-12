@@ -23,6 +23,16 @@ type CreateListingSchema struct {
 	FileType				string				`json:"file_type" validate:"required" example:"image/jpeg"`
 }
 
+type UpdateListingSchema struct {
+	Name					*string				`json:"name" validate:"omitempty,max=70" example:"Product name"`
+	Desc					*string				`json:"desc" example:"Product description"`
+	Category				*string				`json:"category" example:"category_slug"`
+	Price					*decimal.Decimal	`json:"price" example:"1000.00"`
+	ClosingDate				*time.Time			`json:"closing_date" validate:"omitempty,closing_date_validator" example:"2006-01-02T15:04:05.000Z"`
+	FileType				*string				`json:"file_type" example:"image/jpeg"`
+	Active					*bool				`json:"active" example:"true"`
+}
+
 // RESPONSE BODY SCHEMAS
 type ProfileResponseDataSchema struct {
 	FirstName				string				`json:"first_name"`

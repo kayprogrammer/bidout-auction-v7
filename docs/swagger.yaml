@@ -428,6 +428,31 @@ definitions:
         example: success
         type: string
     type: object
+  schemas.UpdateListingSchema:
+    properties:
+      active:
+        example: true
+        type: boolean
+      category:
+        example: category_slug
+        type: string
+      closing_date:
+        example: "2006-01-02T15:04:05.000Z"
+        type: string
+      desc:
+        example: Product description
+        type: string
+      file_type:
+        example: image/jpeg
+        type: string
+      name:
+        example: Product name
+        maxLength: 70
+        type: string
+      price:
+        example: 1000
+        type: number
+    type: object
   schemas.UpdateProfileResponseDataSchema:
     properties:
       file_upload_data:
@@ -584,6 +609,36 @@ paths:
       security:
       - BearerAuth: []
       summary: Create a listing
+      tags:
+      - Auctioneer
+  /api/v7/auctioneer/listings/{slug}:
+    patch:
+      description: 'This endpoint updates a particular listing. Note: Use the returned
+        upload_url to upload image to cloudinary'
+      parameters:
+      - description: Listing Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: Update Listing
+        in: body
+        name: listing
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.UpdateListingSchema'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.CreateListingResponseSchema'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a listing
       tags:
       - Auctioneer
   /api/v7/auth/login:
