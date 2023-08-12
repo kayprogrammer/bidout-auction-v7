@@ -307,3 +307,40 @@ func UpdateListing(c *fiber.Ctx) error {
 	return c.Status(200).JSON(response)
 }
 
+// @Summary Retrieve bids in a listing (current user)
+// @Description This endpoint retrieves all bids in a particular listing by the current user.
+// @Tags Auctioneer
+// @Param slug path string true  "Listing Slug"
+// @Success 200 {object} schemas.BidsResponseSchema
+// @Failure 404 {object} utils.ErrorResponse
+// @Router /api/v7/auctioneer/listings/{slug}/bids [get]
+// @Security BearerAuth
+func GetAuctioneerListingBids(c *fiber.Ctx) error {
+	db := c.Locals("db").(*gorm.DB)
+	user := c.Locals("user").(*models.User)
+
+	listingSlug := c.Params("slug")
+
+	listing := models.Listing{}
+	db.Preload("Bids", func(db *gorm.DB) *gorm.DB {
+		return db.Order("updated_at DESC").Limit(3) // Order by updated
+	}).Find(&listing, "slug = ?", listingSlug)
+	if listing.ID == uuid.Nil {
+		return c.Status(404).JSON(utils.ErrorResponse{Message: "Invalid listing!"}.Init())
+	}
+	if listing.AuctioneerId != user.ID {
+		return c.Status(400).JSON(utils.ErrorResponse{Message: "This listing doesn't belong to you!"}.Init())
+	}
+
+	// Get Bids
+	bids := listing.Bids
+	for i := range bids {
+		bids[i] = bids[i].Init(db)
+	}
+
+	response := schemas.BidsResponseSchema{
+		ResponseSchema: schemas.ResponseSchema{Message: "Listing Bids fetched"}.Init(),
+		Data:           schemas.BidResponseDataSchema{Listing: listing.Name, Bids: bids},
+	}
+	return c.Status(200).JSON(response)
+}

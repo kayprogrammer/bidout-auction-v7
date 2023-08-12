@@ -185,6 +185,43 @@
                 }
             }
         },
+        "/api/v7/auctioneer/listings/{slug}/bids": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "This endpoint retrieves all bids in a particular listing by the current user.",
+                "tags": [
+                    "Auctioneer"
+                ],
+                "summary": "Retrieve bids in a listing (current user)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Listing Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.BidsResponseSchema"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v7/auth/login": {
             "post": {
                 "security": [

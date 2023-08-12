@@ -45,4 +45,5 @@ func SetupRoutes(app *fiber.App) {
 	auctioneerRouter.Get("/listings", midw.AuthMiddleware, GetAuctioneerListings)
 	auctioneerRouter.Post("/listings", midw.AuthMiddleware, CreateListing)
 	auctioneerRouter.Patch("/listings/:slug", midw.AuthMiddleware, UpdateListing)
+	auctioneerRouter.Get("/listings/:slug/bids", midw.AuthMiddleware, GetAuctioneerListingBids)
 }

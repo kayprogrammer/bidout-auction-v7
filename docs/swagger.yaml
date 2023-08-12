@@ -641,6 +641,30 @@ paths:
       summary: Update a listing
       tags:
       - Auctioneer
+  /api/v7/auctioneer/listings/{slug}/bids:
+    get:
+      description: This endpoint retrieves all bids in a particular listing by the
+        current user.
+      parameters:
+      - description: Listing Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.BidsResponseSchema'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Retrieve bids in a listing (current user)
+      tags:
+      - Auctioneer
   /api/v7/auth/login:
     post:
       description: This endpoint generates new access and refresh tokens for authentication
