@@ -16,3 +16,16 @@ func ClosingDateValidator(fl validator.FieldLevel) bool {
 	// Compare the input time with the current time
 	return inputTime.After(currentTime)
 }
+
+// Validates if a file type is accepted
+func FileTypeValidator(fl validator.FieldLevel) bool {
+	fileType := fl.Field().Interface().(string)
+	fileTypeFound := false
+	for key := range ImageExtensions {
+		if key == fileType {
+			fileTypeFound = true
+			break
+		}
+	}
+	return fileTypeFound
+}

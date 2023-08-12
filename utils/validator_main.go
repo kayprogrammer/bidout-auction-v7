@@ -28,7 +28,10 @@ func init() {
     uni := ut.New(en, en)
     translator, _ = uni.GetTranslator("en")
     
+    // Register Custom Validators
     customValidator.RegisterValidation("closing_date_validator", ClosingDateValidator)
+    customValidator.RegisterValidation("file_type_validator", FileTypeValidator)
+
 
 	customValidator.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
@@ -53,6 +56,7 @@ func registerTranslations(param string) {
     }
 
     registerTranslation("closing_date_validator", "Closing date must be beyond the current datetime!", translator)
+    registerTranslation("file_type_validator", "Invalid file type", translator)
     registerTranslation("required", "This field is required.", translator)
 
     minErrMsg := fmt.Sprintf("%s characters min", param)

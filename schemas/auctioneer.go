@@ -11,7 +11,7 @@ import (
 type UpdateProfileSchema struct {
 	FirstName				string				`json:"first_name" validate:"required" example:"John"`
 	LastName				string				`json:"last_name" validate:"required" example:"Doe"`
-	FileType				*string				`json:"file_type" example:"image/png"`
+	FileType				*string				`json:"file_type" validate:"omitempty,file_type_validator" example:"image/png"`
 }
 
 type CreateListingSchema struct {
@@ -20,7 +20,7 @@ type CreateListingSchema struct {
 	Category				string				`json:"category" validate:"required" example:"category_slug"`
 	Price					decimal.Decimal		`json:"price" validate:"required" example:"1000.00"`
 	ClosingDate				time.Time			`json:"closing_date" validate:"required,closing_date_validator" example:"2006-01-02T15:04:05.000Z"`
-	FileType				string				`json:"file_type" validate:"required" example:"image/jpeg"`
+	FileType				string				`json:"file_type" validate:"required,file_type_validator" example:"image/jpeg"`
 }
 
 type UpdateListingSchema struct {
@@ -29,7 +29,7 @@ type UpdateListingSchema struct {
 	Category				*string				`json:"category" example:"category_slug"`
 	Price					*decimal.Decimal	`json:"price" example:"1000.00"`
 	ClosingDate				*time.Time			`json:"closing_date" validate:"omitempty,closing_date_validator" example:"2006-01-02T15:04:05.000Z"`
-	FileType				*string				`json:"file_type" example:"image/jpeg"`
+	FileType				*string				`json:"file_type" validate:"omitempty,file_type_validator" example:"image/jpeg"`
 	Active					*bool				`json:"active" example:"true"`
 }
 

@@ -12,16 +12,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-var fileTypes = []string{
-	"image/bmp",
-	"image/gif",
-	"image/jpeg",
-	"image/png",
-	"image/tiff",
-	"image/webp",
-	"image/svg+xml",
-}
-
 // @Summary Get Profile
 // @Description This endpoint gets the current user's profile.
 // @Tags Auctioneer
@@ -67,20 +57,6 @@ func UpdateProfile(c *fiber.Ctx) error {
 
 	fileType := updateProfileData.FileType
 	if fileType != nil {
-		// Validate file type
-		fileTypeFound := false
-		for _, value := range fileTypes {
-			if value == *fileType {
-				fileTypeFound = true
-				break
-			}
-		}
-		if !fileTypeFound {
-			data := map[string]string{
-				"file_type": "Invalid file type!",
-			}
-			return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
-		}
 		file := models.File{ResourceType: *fileType}
 		if user.AvatarId == nil {
 			db.Create(&file)
@@ -176,20 +152,6 @@ func CreateListing(c *fiber.Ctx) error {
 		categoryId = nil
 	}
 	fileType := createListingData.FileType
-	// Validate file type
-	fileTypeFound := false
-	for _, value := range fileTypes {
-		if value == fileType {
-			fileTypeFound = true
-			break
-		}
-	}
-	if !fileTypeFound {
-		data := map[string]string{
-			"file_type": "Invalid file type!",
-		}
-		return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
-	}
 	file := models.File{ResourceType: fileType}
 	db.Create(&file)
 
@@ -273,20 +235,6 @@ func UpdateListing(c *fiber.Ctx) error {
 	
 	fileType := updateListingData.FileType
 	if fileType != nil {
-		// Validate file type
-		fileTypeFound := false
-		for _, value := range fileTypes {
-			if value == *fileType {
-				fileTypeFound = true
-				break
-			}
-		}
-		if !fileTypeFound {
-			data := map[string]string{
-				"file_type": "Invalid file type!",
-			}
-			return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
-		}
 		file := models.File{ResourceType: *fileType}
 		db.Model(models.File{}).Where("id = ?", listing.ImageId).Updates(&file)
 	}
