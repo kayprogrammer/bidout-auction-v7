@@ -25,3 +25,5 @@ func GetClient(c *fiber.Ctx) *Client {
 	}
 	return &client
 }
+
+// func ParseRequestBody()

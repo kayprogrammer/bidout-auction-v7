@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 
@@ -84,7 +83,6 @@ func (cv *CustomValidator) Validate(i interface{}) *ErrorResponse {
 
 // translateValidationErrors translates the validation errors to custom errors
 func (cv *CustomValidator) translateValidationErrors(errs validator.ValidationErrors) *ErrorResponse {
-    log.Println(errs)
     errData := make(map[string]string)
 	for _, err := range errs {
         registerTranslations(err.Param())

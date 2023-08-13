@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
@@ -10,6 +11,7 @@ import (
 	"github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"log"
 )
 
 // @Summary Get Profile
@@ -126,11 +128,26 @@ func CreateListing(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	createListingData := schemas.CreateListingSchema{}
-	if err := json.Unmarshal(c.Body(), &createListingData); err != nil {
-		data := map[string]string{
-			"closing_date": "Invalid date format!",
-		}
-		return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
+	// if err := json.Unmarshal(c.Body(), &createListingData); err != nil {
+	// 	data := map[string]string{
+	// 		"closing_date": "Invalid date format!",
+	// 	}
+	// 	return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
+	// }
+
+	var mr *MalformedRequest
+	err := DecodeJSONBody(c, &createListingData)
+	if err != nil {
+	if errors.As(err, &mr) {
+		return c.Status(mr.Status).JSON(fiber.Map{
+		"message": mr.Msg,
+		})
+	} else {
+		log.Print(err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		"message": "Internal Server Error",
+		})
+	}
 	}
 
 	// Validate request
