@@ -86,3 +86,7 @@ func DecodeJSONBody(c *fiber.Ctx, dst interface{}) error {
 
 	return nil
 }
+
+nothing := "Decode"
+
+log.Println(nothing)
