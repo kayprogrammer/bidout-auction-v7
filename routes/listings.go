@@ -123,9 +123,11 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	addRemoveWatchlistData := schemas.AddOrRemoveWatchlistSchema{}
-	c.BodyParser(&addRemoveWatchlistData)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &addRemoveWatchlistData); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(addRemoveWatchlistData); err != nil {
 		return c.Status(422).JSON(err)
 	}
@@ -304,9 +306,11 @@ func CreateBid(c *fiber.Ctx) error {
 
 	validator := utils.Validator()
 	createBidData := schemas.CreateBidSchema{}
-	c.BodyParser(&createBidData)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &createBidData); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(createBidData); err != nil {
 		return c.Status(422).JSON(err)
 	}

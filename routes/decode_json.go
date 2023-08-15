@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"log"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -11,78 +10,72 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/kayprogrammer/bidout-auction-v7/utils"
 )
 
-type MalformedRequest struct {
-	Status int
-	Msg    string
-}
 
-func (mr *MalformedRequest) Error() string {
-	return mr.Msg
-}
-
-func DecodeJSONBody(c *fiber.Ctx, dst interface{}) error {
+func DecodeJSONBody(c *fiber.Ctx, dst interface{}) (int, *utils.ErrorResponse) {
+	var errData *utils.ErrorResponse
+	code := 200
 	if c.Get("Content-Type") != "application/json" {
-		msg := "Content-Type header is not application/json"
-		return &MalformedRequest{Status: http.StatusUnsupportedMediaType, Msg: msg}
+		errD := utils.ErrorResponse{Message: "Content-Type header is not application/json"}.Init()
+		errData = &errD
+		return code, errData
 	}
 
 	dec := json.NewDecoder(bytes.NewReader(c.Body()))
 	dec.DisallowUnknownFields()
 
 	err := dec.Decode(&dst)
+
+	msg := "Invalid Entry"
+	fieldErrors := make(map[string]string)
+	status_code := 422
 	if err != nil {
 		var syntaxError *json.SyntaxError
 		var unmarshalTypeError *json.UnmarshalTypeError
-
+		errStr := err.Error()
 		switch {
-		case errors.As(err, &syntaxError):
-			msg := fmt.Sprintf(
-				"Request body contains badly-formed JSON (at position %d)",
-				syntaxError.Offset,
-			)
-			log.Println("MEssage: ", msg)
-			return &MalformedRequest{Status: http.StatusBadRequest, Msg: msg}
+			case errors.As(err, &syntaxError):
+				msg = fmt.Sprintf(
+					"Request body contains badly-formed JSON (at position %d)",
+					syntaxError.Offset,
+				)
 
-		case errors.Is(err, io.ErrUnexpectedEOF):
-			return &MalformedRequest{
-				Status: http.StatusBadRequest,
-				Msg:    "Request body contains badly-formed JSON",
-			}
+			case errors.Is(err, io.ErrUnexpectedEOF):
+				status_code = http.StatusBadRequest
+				msg="Request body contains badly-formed JSON"
 
-		case errors.As(err, &unmarshalTypeError):
-			msg := fmt.Sprintf(
-				"Request body contains an invalid value for the %q field (at position %d)",
-				unmarshalTypeError.Field,
-				unmarshalTypeError.Offset,
-			)
-			log.Println("Message: ", msg)
-			return &MalformedRequest{Status: http.StatusBadRequest, Msg: msg}
+			case errors.As(err, &unmarshalTypeError):
+				fieldName := unmarshalTypeError.Field
+				fieldErrors[fieldName] = "Invalid format"
+			case strings.HasPrefix(errStr, "json: unknown field "):
+				fieldName := strings.TrimPrefix(errStr, "json: unknown field ")
+				fieldErrors[fieldName] = "Unknown field"
+			case errors.Is(err, io.EOF):
+				status_code = http.StatusBadRequest
+				msg = "Request body must not be empty"
 
-		case strings.HasPrefix(err.Error(), "json: unknown field "):
-			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
-			msg := fmt.Sprintf("Request body contains unknown field %s", fieldName)
-			return &MalformedRequest{Status: http.StatusBadRequest, Msg: msg}
+			case errStr == "http: request body too large":
+				status_code = http.StatusRequestEntityTooLarge
+				msg = "Request body must not be larger than 1MB"
 
-		case errors.Is(err, io.EOF):
-			msg := "Request body must not be empty"
-			return &MalformedRequest{Status: http.StatusBadRequest, Msg: msg}
-
-		case err.Error() == "http: request body too large":
-			msg := "Request body must not be larger than 1MB"
-			return &MalformedRequest{Status: http.StatusRequestEntityTooLarge, Msg: msg}
-
-		default:
-			return err
+			default:
+				status_code = 400
+				msg = "Invalid request"
 		}
+		errData := utils.ErrorResponse{Message: msg}.Init()
+		if len(fieldErrors) > 0 {
+			errData.Data = &fieldErrors
+		}
+		code = status_code
+		return code, &errData
 	}
 
 	err = dec.Decode(&struct{}{})
 	if err != io.EOF {
-		msg := "Request body must only contain a single JSON object"
-		return &MalformedRequest{Status: http.StatusBadRequest, Msg: msg}
+		errData := utils.ErrorResponse{Message: "Request body must only contain a single JSON object"}.Init()
+		return 400, &errData
 	}
-
-	return nil
+	return code, nil
 }

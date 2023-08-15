@@ -28,6 +28,7 @@ func init() {
     translator, _ = uni.GetTranslator("en")
     
     // Register Custom Validators
+    customValidator.RegisterValidation("date", DateValidator)
     customValidator.RegisterValidation("closing_date_validator", ClosingDateValidator)
     customValidator.RegisterValidation("file_type_validator", FileTypeValidator)
 
@@ -54,6 +55,7 @@ func registerTranslations(param string) {
         })
     }
 
+    registerTranslation("date", "Invalid date format!", translator)
     registerTranslation("closing_date_validator", "Closing date must be beyond the current datetime!", translator)
     registerTranslation("file_type_validator", "Invalid file type", translator)
     registerTranslation("required", "This field is required.", translator)

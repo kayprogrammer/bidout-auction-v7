@@ -33,9 +33,11 @@ func Register(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	user := models.User{}
-	c.BodyParser(&user)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &user); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(user); err != nil {
 		return c.Status(422).JSON(err)
 	}
@@ -74,9 +76,11 @@ func VerifyEmail(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	verifyEmail := schemas.VerifyEmailRequestSchema{}
-	c.BodyParser(&verifyEmail)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &verifyEmail); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(verifyEmail); err != nil {
 		return c.Status(422).JSON(err)
 	}
@@ -125,9 +129,11 @@ func ResendVerificationEmail(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	emailSchema := schemas.EmailRequestSchema{}
-	c.BodyParser(&emailSchema)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &emailSchema); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(emailSchema); err != nil {
 		return c.Status(422).JSON(err)
 	}
@@ -163,9 +169,11 @@ func SendPasswordResetOtp(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	emailSchema := schemas.EmailRequestSchema{}
-	c.BodyParser(&emailSchema)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &emailSchema); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(emailSchema); err != nil {
 		return c.Status(422).JSON(err)
 	}
@@ -197,9 +205,11 @@ func SetNewPassword(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	passwordResetSchema := schemas.SetNewPasswordSchema{}
-	c.BodyParser(&passwordResetSchema)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &passwordResetSchema); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(passwordResetSchema); err != nil {
 		return c.Status(422).JSON(err)
 	}
@@ -246,9 +256,11 @@ func Login(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	userLoginSchema := schemas.LoginSchema{}
-	c.BodyParser(&userLoginSchema)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &userLoginSchema); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(userLoginSchema); err != nil {
 		return c.Status(422).JSON(err)
 	}
@@ -309,9 +321,11 @@ func Refresh(c *fiber.Ctx) error {
 	validator := utils.Validator()
 
 	refreshTokenSchema := schemas.RefreshTokenSchema{}
-	c.BodyParser(&refreshTokenSchema)
 
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &refreshTokenSchema); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(refreshTokenSchema); err != nil {
 		return c.Status(422).JSON(err)
 	}

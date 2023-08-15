@@ -38,9 +38,10 @@ func Subscribe(c *fiber.Ctx) error {
 	validator := utils.Validator()
 	subscriber := models.Subscriber{}
 
-	c.BodyParser(&subscriber)
-
 	// Validate request
+	if errCode, errData := DecodeJSONBody(c, &subscriber); errData != nil {
+		return c.Status(errCode).JSON(errData)
+	}
 	if err := validator.Validate(subscriber); err != nil {
 		return c.Status(422).JSON(err)
 	}
