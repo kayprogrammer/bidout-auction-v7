@@ -7,7 +7,6 @@ import (
 	"time"
 	"reflect"
 	"github.com/shopspring/decimal"
-	"log"
 )
 
 func GetRandomString(length int) string {
@@ -71,9 +70,6 @@ func AssignFields(src interface{}, dest interface{}) {
 
 		if !srcField.IsNil() && srcField.Kind() == reflect.Ptr {
 			destField := destValue.FieldByName(srcValue.Type().Field(i).Name)
-			log.Println(destField.Type())
-			log.Println(srcField.Elem())
-			
 			if destField.IsValid() {
 				if srcField.Elem().Type().ConvertibleTo(destField.Type()) {
 					destField.Set(srcField.Elem().Convert(destField.Type()))
@@ -81,9 +77,8 @@ func AssignFields(src interface{}, dest interface{}) {
 					decimalValue := decimal.NewFromFloat(srcField.Elem().Float())
 					destField.Set(reflect.ValueOf(decimalValue))
 				} else if destField.Type() == reflect.TypeOf(time.Time{}) && srcField.Elem().Kind() == reflect.String {
-					layout := "2006-01-02T15:04:05.000Z" // Change this to match your input date format
 					dateString := srcField.Elem().String()
-					parsedTime, _ := time.Parse(layout, dateString)
+					parsedTime := TimeParser(dateString)
 					destField.Set(reflect.ValueOf(parsedTime))
 				} else {
 					destField.Set(srcField.Elem())
@@ -94,11 +89,7 @@ func AssignFields(src interface{}, dest interface{}) {
 }
 
 func TimeParser(timeStr string) time.Time {
-	parsedTime, err := time.Parse("2006-01-02T15:04:05.999Z07:00", timeStr)
-	log.Println(err)
-	// if err != nil {
-	// 	parsedTime, err := time.Parse("2006-01-02T15:04:05.000+01:00", timeStr)
-	// }
+	parsedTime, _ := time.Parse(time.RFC3339, timeStr)
 	return parsedTime.UTC()
 }
 

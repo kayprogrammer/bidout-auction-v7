@@ -2,7 +2,6 @@ package utils
 
 import (
 	"log"
-	"regexp"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -11,10 +10,8 @@ import (
 // Validates if a date has a correct format (ISO8601)
 func DateValidator(fl validator.FieldLevel) bool {
 	inputTimeString := fl.Field().String()
-	iso8601Pattern := `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[\+\-]\d{2}:\d{2})$`
-
-	match, _ := regexp.MatchString(iso8601Pattern, inputTimeString)
-	return match
+	_, err := time.Parse(time.RFC3339, inputTimeString)
+	return err == nil
 }
 
 // Validates if a closing date is greater than current date
