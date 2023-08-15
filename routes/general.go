@@ -13,7 +13,7 @@ import (
 // @Description This endpoint retrieves few details of the site/application.
 // @Tags General
 // @Success 200 {object} schemas.SiteDetailResponseSchema
-// @Router /api/v7/general/site-detail [get]
+// @Router /general/site-detail [get]
 func GetSiteDetails(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	var sitedetail models.SiteDetail
@@ -32,7 +32,7 @@ func GetSiteDetails(c *fiber.Ctx) error {
 // @Param subscriber body models.Subscriber true "Subscriber object"
 // @Success 201 {object} schemas.SubscriberResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
-// @Router /api/v7/general/subscribe [post]
+// @Router /general/subscribe [post]
 func Subscribe(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
@@ -59,7 +59,7 @@ func Subscribe(c *fiber.Ctx) error {
 // @Description This endpoint retrieves a few reviews of the application.
 // @Tags General
 // @Success 200 {object} schemas.ReviewsResponseSchema
-// @Router /api/v7/general/reviews [get]
+// @Router /general/reviews [get]
 func GetReviews(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 

@@ -22,7 +22,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v7/auctioneer": {
+        "/auctioneer": {
             "get": {
                 "security": [
                     {
@@ -81,7 +81,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auctioneer/listings": {
+        "/auctioneer/listings": {
             "get": {
                 "security": [
                     {
@@ -148,7 +148,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auctioneer/listings/{slug}": {
+        "/auctioneer/listings/{slug}": {
             "patch": {
                 "security": [
                     {
@@ -194,7 +194,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auctioneer/listings/{slug}/bids": {
+        "/auctioneer/listings/{slug}/bids": {
             "get": {
                 "security": [
                     {
@@ -231,7 +231,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auth/login": {
+        "/auth/login": {
             "post": {
                 "security": [
                     {
@@ -276,7 +276,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auth/logout": {
+        "/auth/logout": {
             "get": {
                 "security": [
                     {
@@ -304,7 +304,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auth/refresh": {
+        "/auth/refresh": {
             "post": {
                 "description": "This endpoint refresh tokens by generating new access and refresh tokens for a user",
                 "tags": [
@@ -350,7 +350,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auth/register": {
+        "/auth/register": {
             "post": {
                 "description": "This endpoint registers new users into our application.",
                 "tags": [
@@ -384,7 +384,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auth/resend-verification-email": {
+        "/auth/resend-verification-email": {
             "post": {
                 "description": "This endpoint resends new otp to the user's email.",
                 "tags": [
@@ -418,7 +418,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auth/send-password-reset-otp": {
+        "/auth/send-password-reset-otp": {
             "post": {
                 "description": "This endpoint sends new password reset otp to the user's email.",
                 "tags": [
@@ -458,7 +458,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auth/set-new-password": {
+        "/auth/set-new-password": {
             "post": {
                 "description": "This endpoint verifies the password reset otp.",
                 "tags": [
@@ -498,7 +498,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/auth/verify-email": {
+        "/auth/verify-email": {
             "post": {
                 "description": "This endpoint verifies a user's email.",
                 "tags": [
@@ -532,7 +532,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/general/reviews": {
+        "/general/reviews": {
             "get": {
                 "description": "This endpoint retrieves a few reviews of the application.",
                 "tags": [
@@ -549,7 +549,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/general/site-detail": {
+        "/general/site-detail": {
             "get": {
                 "description": "This endpoint retrieves few details of the site/application.",
                 "tags": [
@@ -566,7 +566,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/general/subscribe": {
+        "/general/subscribe": {
             "post": {
                 "description": "This endpoint creates a newsletter subscriber in our application",
                 "tags": [
@@ -600,7 +600,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/listings": {
+        "/listings": {
             "get": {
                 "security": [
                     {
@@ -633,7 +633,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/listings/categories": {
+        "/listings/categories": {
             "get": {
                 "description": "This endpoint retrieves all categories",
                 "tags": [
@@ -650,7 +650,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/listings/categories/{slug}": {
+        "/listings/categories/{slug}": {
             "get": {
                 "description": "This endpoint retrieves all listings in a particular category. Use slug 'other' for category other",
                 "tags": [
@@ -682,7 +682,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/listings/detail/{slug}": {
+        "/listings/detail/{slug}": {
             "get": {
                 "description": "This endpoint retrieves detail of a listing.",
                 "tags": [
@@ -708,7 +708,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/listings/detail/{slug}/bids": {
+        "/listings/detail/{slug}/bids": {
             "get": {
                 "description": "This endpoint retrieves at most 3 bids from a particular listing.",
                 "tags": [
@@ -790,7 +790,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v7/listings/watchlist": {
+        "/listings/watchlist": {
             "get": {
                 "security": [
                     {
@@ -1646,7 +1646,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "7.0",
 	Host:             "",
-	BasePath:         "",
+	BasePath:         "/api/v7",
 	Schemes:          []string{},
 	Title:            "Bidout Auction API",
 	Description:      "A simple bidding API built with Fiber",

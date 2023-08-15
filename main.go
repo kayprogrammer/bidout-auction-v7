@@ -18,6 +18,7 @@ import (
 // @description A simple bidding API built with Fiber
 // @Accept json
 // @Produce json
+// @BasePath  /api/v7
 // @Security BearerAuth
 // @securityDefinitions.apikey BearerAuth 
 // @in header 
@@ -49,13 +50,11 @@ func main() {
 
 	// Register routes
 	routes.SetupRoutes(app)
-	app.Get("/*", swagger.HandlerDefault) // default
+	app.Get("/docs/*", swagger.HandlerDefault) // default
 
-	app.Get("/*", swagger.New(swagger.Config{ // custom
+	app.Get("/docs/*", swagger.New(swagger.Config{ // custom
 		URL: "http://example.com/doc.json",
 		DeepLinking: false,
-		// Expand ("list") or Collapse ("none") tag groups by default
-		DocExpansion: "none",
 	}))
 	log.Fatal(app.Listen(":8000"))
 }

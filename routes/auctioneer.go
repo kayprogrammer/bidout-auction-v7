@@ -18,7 +18,7 @@ import (
 // @Description This endpoint gets the current user's profile.
 // @Tags Auctioneer
 // @Success 200 {object} schemas.ProfileResponseSchema
-// @Router /api/v7/auctioneer [get]
+// @Router /auctioneer [get]
 // @Security BearerAuth
 func GetProfile(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
@@ -42,7 +42,7 @@ func GetProfile(c *fiber.Ctx) error {
 // @Param user body schemas.UpdateProfileSchema true "Update User"
 // @Success 200 {object} schemas.UpdateProfileResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
-// @Router /api/v7/auctioneer [put]
+// @Router /auctioneer [put]
 // @Security BearerAuth
 func UpdateProfile(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
@@ -89,7 +89,7 @@ func UpdateProfile(c *fiber.Ctx) error {
 // @Tags Auctioneer
 // @Param quantity query int false  "Listings Quantity"
 // @Success 200 {object} schemas.ListingsResponseSchema
-// @Router /api/v7/auctioneer/listings [get]
+// @Router /auctioneer/listings [get]
 // @Security BearerAuth
 func GetAuctioneerListings(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
@@ -120,7 +120,7 @@ func GetAuctioneerListings(c *fiber.Ctx) error {
 // @Param listing body schemas.CreateListingSchema true "Create Listing"
 // @Success 200 {object} schemas.CreateListingResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
-// @Router /api/v7/auctioneer/listings [post]
+// @Router /auctioneer/listings [post]
 // @Security BearerAuth
 func CreateListing(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
@@ -203,7 +203,7 @@ func CreateListing(c *fiber.Ctx) error {
 // @Param listing body schemas.UpdateListingSchema true "Update Listing"
 // @Success 200 {object} schemas.CreateListingResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
-// @Router /api/v7/auctioneer/listings/{slug} [patch]
+// @Router /auctioneer/listings/{slug} [patch]
 // @Security BearerAuth
 func UpdateListing(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
@@ -278,7 +278,7 @@ func UpdateListing(c *fiber.Ctx) error {
 // @Param slug path string true  "Listing Slug"
 // @Success 200 {object} schemas.BidsResponseSchema
 // @Failure 404 {object} utils.ErrorResponse
-// @Router /api/v7/auctioneer/listings/{slug}/bids [get]
+// @Router /auctioneer/listings/{slug}/bids [get]
 // @Security BearerAuth
 func GetAuctioneerListingBids(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)

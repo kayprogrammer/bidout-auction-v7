@@ -1,3 +1,4 @@
+basePath: /api/v7
 consumes:
 - application/json
 definitions:
@@ -532,7 +533,7 @@ info:
   title: Bidout Auction API
   version: "7.0"
 paths:
-  /api/v7/auctioneer:
+  /auctioneer:
     get:
       description: This endpoint gets the current user's profile.
       responses:
@@ -569,7 +570,7 @@ paths:
       summary: Update Profile
       tags:
       - Auctioneer
-  /api/v7/auctioneer/listings:
+  /auctioneer/listings:
     get:
       description: This endpoint retrieves all listings by the current user.
       parameters:
@@ -611,7 +612,7 @@ paths:
       summary: Create a listing
       tags:
       - Auctioneer
-  /api/v7/auctioneer/listings/{slug}:
+  /auctioneer/listings/{slug}:
     patch:
       description: 'This endpoint updates a particular listing. Note: Use the returned
         upload_url to upload image to cloudinary'
@@ -641,7 +642,7 @@ paths:
       summary: Update a listing
       tags:
       - Auctioneer
-  /api/v7/auctioneer/listings/{slug}/bids:
+  /auctioneer/listings/{slug}/bids:
     get:
       description: This endpoint retrieves all bids in a particular listing by the
         current user.
@@ -665,7 +666,7 @@ paths:
       summary: Retrieve bids in a listing (current user)
       tags:
       - Auctioneer
-  /api/v7/auth/login:
+  /auth/login:
     post:
       description: This endpoint generates new access and refresh tokens for authentication
       parameters:
@@ -693,7 +694,7 @@ paths:
       summary: Login a user
       tags:
       - Auth
-  /api/v7/auth/logout:
+  /auth/logout:
     get:
       description: This endpoint logs a user out from our application
       responses:
@@ -710,7 +711,7 @@ paths:
       summary: Logout a user
       tags:
       - Auth
-  /api/v7/auth/refresh:
+  /auth/refresh:
     post:
       description: This endpoint refresh tokens by generating new access and refresh
         tokens for a user
@@ -741,7 +742,7 @@ paths:
       summary: Refresh tokens
       tags:
       - Auth
-  /api/v7/auth/register:
+  /auth/register:
     post:
       description: This endpoint registers new users into our application.
       parameters:
@@ -763,7 +764,7 @@ paths:
       summary: Register a new user
       tags:
       - Auth
-  /api/v7/auth/resend-verification-email:
+  /auth/resend-verification-email:
     post:
       description: This endpoint resends new otp to the user's email.
       parameters:
@@ -785,7 +786,7 @@ paths:
       summary: Resend Verification Email
       tags:
       - Auth
-  /api/v7/auth/send-password-reset-otp:
+  /auth/send-password-reset-otp:
     post:
       description: This endpoint sends new password reset otp to the user's email.
       parameters:
@@ -811,7 +812,7 @@ paths:
       summary: Send Password Reset Otp
       tags:
       - Auth
-  /api/v7/auth/set-new-password:
+  /auth/set-new-password:
     post:
       description: This endpoint verifies the password reset otp.
       parameters:
@@ -837,7 +838,7 @@ paths:
       summary: Set New Password
       tags:
       - Auth
-  /api/v7/auth/verify-email:
+  /auth/verify-email:
     post:
       description: This endpoint verifies a user's email.
       parameters:
@@ -859,7 +860,7 @@ paths:
       summary: Verify a user's email
       tags:
       - Auth
-  /api/v7/general/reviews:
+  /general/reviews:
     get:
       description: This endpoint retrieves a few reviews of the application.
       responses:
@@ -870,7 +871,7 @@ paths:
       summary: Retrieve site reviews
       tags:
       - General
-  /api/v7/general/site-detail:
+  /general/site-detail:
     get:
       description: This endpoint retrieves few details of the site/application.
       responses:
@@ -881,7 +882,7 @@ paths:
       summary: Retrieve site details
       tags:
       - General
-  /api/v7/general/subscribe:
+  /general/subscribe:
     post:
       description: This endpoint creates a newsletter subscriber in our application
       parameters:
@@ -903,7 +904,7 @@ paths:
       summary: Add a subscriber
       tags:
       - General
-  /api/v7/listings:
+  /listings:
     get:
       description: This endpoint retrieves all listings.
       parameters:
@@ -922,7 +923,7 @@ paths:
       summary: Retrieve all listings
       tags:
       - Listings
-  /api/v7/listings/categories:
+  /listings/categories:
     get:
       description: This endpoint retrieves all categories
       responses:
@@ -933,7 +934,7 @@ paths:
       summary: Retrieve all categories
       tags:
       - Listings
-  /api/v7/listings/categories/{slug}:
+  /listings/categories/{slug}:
     get:
       description: This endpoint retrieves all listings in a particular category.
         Use slug 'other' for category other
@@ -955,7 +956,7 @@ paths:
       summary: Retrieve all listings by category
       tags:
       - Listings
-  /api/v7/listings/detail/{slug}:
+  /listings/detail/{slug}:
     get:
       description: This endpoint retrieves detail of a listing.
       parameters:
@@ -972,7 +973,7 @@ paths:
       summary: Retrieve listing's detail
       tags:
       - Listings
-  /api/v7/listings/detail/{slug}/bids:
+  /listings/detail/{slug}/bids:
     get:
       description: This endpoint retrieves at most 3 bids from a particular listing.
       parameters:
@@ -1025,7 +1026,7 @@ paths:
       summary: Add a bid to a listing
       tags:
       - Listings
-  /api/v7/listings/watchlist:
+  /listings/watchlist:
     get:
       description: This endpoint retrieves all watchlist listings.
       responses:

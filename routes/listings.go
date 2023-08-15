@@ -15,7 +15,7 @@ import (
 // @Tags Listings
 // @Param quantity query int false  "Listings Quantity"
 // @Success 200 {object} schemas.ListingsResponseSchema
-// @Router /api/v7/listings [get]
+// @Router /listings [get]
 // @Security BearerAuth
 // @Security GuestUserAuth
 func GetListings(c *fiber.Ctx) error {
@@ -52,7 +52,7 @@ func GetListings(c *fiber.Ctx) error {
 // @Tags Listings
 // @Param slug path string true  "Listing Slug"
 // @Success 200 {object} schemas.ListingDetailResponseSchema
-// @Router /api/v7/listings/detail/{slug} [get]
+// @Router /listings/detail/{slug} [get]
 func GetListing(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	listing := models.Listing{}
@@ -81,7 +81,7 @@ func GetListing(c *fiber.Ctx) error {
 // @Description This endpoint retrieves all watchlist listings.
 // @Tags Listings
 // @Success 200 {object} schemas.ListingsResponseSchema
-// @Router /api/v7/listings/watchlist [get]
+// @Router /listings/watchlist [get]
 // @Security BearerAuth
 // @Security GuestUserAuth
 func GetWatchlistListings(c *fiber.Ctx) error {
@@ -115,7 +115,7 @@ func GetWatchlistListings(c *fiber.Ctx) error {
 // @Success 200 {object} schemas.AddOrRemoveWatchlistResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 404 {object} utils.ErrorResponse
-// @Router /api/v7/listings/watchlist [post]
+// @Router /listings/watchlist [post]
 // @Security BearerAuth
 // @Security GuestUserAuth
 func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
@@ -182,7 +182,7 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 // @Description This endpoint retrieves all categories
 // @Tags Listings
 // @Success 200 {object} schemas.CategoriesResponseSchema
-// @Router /api/v7/listings/categories [get]
+// @Router /listings/categories [get]
 func GetCategories(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 
@@ -204,7 +204,7 @@ func GetCategories(c *fiber.Ctx) error {
 // @Param slug path string true  "Category Slug"
 // @Success 200 {object} schemas.ListingsResponseSchema
 // @Failure 404 {object} utils.ErrorResponse
-// @Router /api/v7/listings/categories/{slug} [get]
+// @Router /listings/categories/{slug} [get]
 func GetCategoryListings(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	client := GetClient(c)
@@ -251,7 +251,7 @@ func GetCategoryListings(c *fiber.Ctx) error {
 // @Param slug path string true  "Listing Slug"
 // @Success 200 {object} schemas.BidsResponseSchema
 // @Failure 404 {object} utils.ErrorResponse
-// @Router /api/v7/listings/detail/{slug}/bids [get]
+// @Router /listings/detail/{slug}/bids [get]
 func GetListingBids(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	listingSlug := c.Params("slug")
@@ -285,7 +285,7 @@ func GetListingBids(c *fiber.Ctx) error {
 // @Success 201 {object} schemas.BidResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 404 {object} utils.ErrorResponse
-// @Router /api/v7/listings/detail/{slug}/bids [post]
+// @Router /listings/detail/{slug}/bids [post]
 // @Security BearerAuth
 func CreateBid(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)

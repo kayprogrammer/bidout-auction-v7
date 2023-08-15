@@ -27,7 +27,7 @@ func (es *EmailSender) SendEmail(db *gorm.DB, user models.User, emailType string
 // @Param user body models.User true "User object"
 // @Success 201 {object} schemas.RegisterResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
-// @Router /api/v7/auth/register [post]
+// @Router /auth/register [post]
 func Register(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
@@ -68,7 +68,7 @@ func Register(c *fiber.Ctx) error {
 // @Param verify_email body schemas.VerifyEmailRequestSchema true "Verify Email object"
 // @Success 200 {object} schemas.ResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
-// @Router /api/v7/auth/verify-email [post]
+// @Router /auth/verify-email [post]
 func VerifyEmail(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
@@ -119,7 +119,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 // @Param email body schemas.EmailRequestSchema true "Email object"
 // @Success 200 {object} schemas.ResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
-// @Router /api/v7/auth/resend-verification-email [post]
+// @Router /auth/resend-verification-email [post]
 func ResendVerificationEmail(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
@@ -157,7 +157,7 @@ func ResendVerificationEmail(c *fiber.Ctx) error {
 // @Success 200 {object} schemas.ResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 404 {object} utils.ErrorResponse
-// @Router /api/v7/auth/send-password-reset-otp [post]
+// @Router /auth/send-password-reset-otp [post]
 func SendPasswordResetOtp(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
@@ -191,7 +191,7 @@ func SendPasswordResetOtp(c *fiber.Ctx) error {
 // @Success 200 {object} schemas.ResponseSchema
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 404 {object} utils.ErrorResponse
-// @Router /api/v7/auth/set-new-password [post]
+// @Router /auth/set-new-password [post]
 func SetNewPassword(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
@@ -240,7 +240,7 @@ func SetNewPassword(c *fiber.Ctx) error {
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 401 {object} utils.ErrorResponse
 // @Security GuestUserAuth
-// @Router /api/v7/auth/login [post]
+// @Router /auth/login [post]
 func Login(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
@@ -303,7 +303,7 @@ func Login(c *fiber.Ctx) error {
 // @Failure 422 {object} utils.ErrorResponse
 // @Failure 404 {object} utils.ErrorResponse
 // @Failure 401 {object} utils.ErrorResponse
-// @Router /api/v7/auth/refresh [post]
+// @Router /auth/refresh [post]
 func Refresh(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	validator := utils.Validator()
@@ -346,7 +346,7 @@ func Refresh(c *fiber.Ctx) error {
 // @Tags Auth
 // @Success 200 {object} schemas.ResponseSchema
 // @Failure 401 {object} utils.ErrorResponse
-// @Router /api/v7/auth/logout [get]
+// @Router /auth/logout [get]
 // @Security BearerAuth
 func Logout(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)

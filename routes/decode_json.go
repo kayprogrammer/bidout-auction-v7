@@ -57,7 +57,7 @@ func DecodeJSONBody(c *fiber.Ctx, dst interface{}) error {
 				unmarshalTypeError.Field,
 				unmarshalTypeError.Offset,
 			)
-			log.Println("MEssage: ", msg)
+			log.Println("Message: ", msg)
 			return &MalformedRequest{Status: http.StatusBadRequest, Msg: msg}
 
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
@@ -86,7 +86,3 @@ func DecodeJSONBody(c *fiber.Ctx, dst interface{}) error {
 
 	return nil
 }
-
-nothing := "Decode"
-
-log.Println(nothing)
