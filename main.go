@@ -45,16 +45,12 @@ func main() {
 		AllowOrigins: cfg.CORSAllowedOrigins,
 		AllowHeaders:  "Origin, Content-Type, Accept, Authorization, Guestuserid, Access-Control-Allow-Origin, Content-Disposition",
 		AllowCredentials: true,
-		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+		AllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
 	}))
 
 	// Register routes
 	routes.SetupRoutes(app)
-	app.Get("/docs/*", swagger.HandlerDefault) // default
+	app.Get("/*", swagger.HandlerDefault) // default
 
-	app.Get("/docs/*", swagger.New(swagger.Config{ // custom
-		URL: "http://example.com/doc.json",
-		DeepLinking: false,
-	}))
 	log.Fatal(app.Listen(":8000"))
 }

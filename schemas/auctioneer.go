@@ -7,18 +7,18 @@ import (
 
 // REQUEST BODY SCHEMAS
 type UpdateProfileSchema struct {
-	FirstName string  `json:"first_name" validate:"required" example:"John"`
-	LastName  string  `json:"last_name" validate:"required" example:"Doe"`
-	FileType  *string `json:"file_type" validate:"omitempty,file_type_validator" example:"image/png"`
+	FirstName 		string  			`json:"first_name" validate:"required" example:"John"`
+	LastName  		string  			`json:"last_name" validate:"required" example:"Doe"`
+	FileType  		*string 			`json:"file_type" validate:"omitempty,file_type_validator" example:"image/png"`
 }
 
 type CreateListingSchema struct {
-	Name        string          `json:"name" validate:"required,max=70" example:"Product name"`
-	Desc        string          `json:"desc" validate:"required" example:"Product description"`
-	Category    string          `json:"category" validate:"required" example:"category_slug"`
-	Price       float64 		`json:"price" validate:"required" example:"1000.00"`
-	ClosingDate string 		    `json:"closing_date" validate:"required,date,closing_date_validator" example:"2006-01-02T15:04:05.000Z"`
-	FileType    string          `json:"file_type" validate:"required,file_type_validator" example:"image/jpeg"`
+	Name        	string	          `json:"name" validate:"required,max=70" example:"Product name"`
+	Desc        	string	          `json:"desc" validate:"required" example:"Product description"`
+	Category    	string	          `json:"category" validate:"required" example:"category_slug"`
+	Price       	float64	 		  `json:"price" validate:"required" example:"1000.00"`
+	ClosingDate 	string	 		  `json:"closing_date" validate:"required,date,closing_date_validator" example:"2006-01-02T15:04:05.000Z"`
+	FileType    	string	          `json:"file_type" validate:"required,file_type_validator" example:"image/jpeg"`
 }
 
 type UpdateListingSchema struct {
