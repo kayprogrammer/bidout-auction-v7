@@ -42,8 +42,8 @@ func getListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 
 func getListing(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 	// Drop and Create Tables since the previous test uses the create_listing it...
-	DropTables(db)
-	CreateTables(db)
+	DropSingleTable(db, models.Listing{})
+	CreateSingleTable(db, models.Listing{})
 
 	// Create Listing
 	listing := CreateListing(db)
@@ -87,10 +87,6 @@ func getListing(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 }
 
 func getWatchlistListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
-	// Drop and Create Tables since the previous test uses the create_listing it...
-	DropTables(db)
-	CreateTables(db)
-
 	// Create Listing
 	listing := CreateListing(db)
 
@@ -121,9 +117,9 @@ func getWatchlistListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl str
 }
 
 func createOrRemoveUserWatchlistsListing(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
-	// Drop and Create Tables since the previous test uses the user table it...
-	DropTables(db)
-	CreateTables(db)
+	// Drop and Create Tables since the previous test uses the watchlist table it...
+	DropSingleTable(db, models.Watchlist{})
+	CreateSingleTable(db, models.Watchlist{})
 
 	t.Run("Create Or Remove User Watchlists Listing", func(t *testing.T) {
 		listing := CreateListing(db)
@@ -181,10 +177,6 @@ func getCategories(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 }
 
 func getCategoryListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
-	// Drop and Create Tables since the previous test uses the listing table it...
-	DropTables(db)
-	CreateTables(db)
-
 	listing := CreateListing(db)
 	t.Run("Get Category Listings", func(t *testing.T) {
 		url := fmt.Sprintf("%s/categories/invalid_category_slug", baseUrl)
@@ -224,10 +216,6 @@ func getCategoryListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl stri
 }
 
 func getListingBids(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
-	// Drop and Create Tables since the previous test uses the listing table it...
-	DropTables(db)
-	CreateTables(db)
-
 	listing := CreateListing(db)
 	anotherVerifiedUser := CreateAnotherTestVerifiedUser(db)
 
@@ -269,10 +257,6 @@ func getListingBids(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 }
 
 func createBid(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
-	// Drop and Create Tables since the previous test uses the user table it...
-	DropTables(db)
-	CreateTables(db)
-
 	listing := CreateListing(db)
 	anotherVerifiedUser := CreateAnotherTestVerifiedUser(db)
 
