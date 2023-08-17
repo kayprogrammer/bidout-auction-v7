@@ -315,7 +315,7 @@ func CreateBid(c *fiber.Ctx) error {
 		return c.Status(422).JSON(err)
 	}
 
-	amount := createBidData.Amount
+	amount := utils.DecimalParser(createBidData.Amount)
 	if user.ID == listing.AuctioneerId {
 		return c.Status(403).JSON(utils.ErrorResponse{Message: "You cannot bid your own product!"}.Init())
 	} else if !listing.Active {

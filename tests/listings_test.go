@@ -264,7 +264,7 @@ func createBid(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 
 		url := fmt.Sprintf("%s/detail/invalid_listing_slug/bids", baseUrl)
 		createBidData := schemas.CreateBidSchema{
-			Amount: decimal.NewFromFloat(2000.00),
+			Amount: 2000.00,
 		}
 		jwt := CreateJwt(db, listing.AuctioneerId)
 		res := ProcessTestBody(t, app, url, "POST", createBidData, jwt.Access)
@@ -287,7 +287,7 @@ func createBid(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		assert.Equal(t, "You cannot bid your own product!", body["message"])
 
 		// Test for failure for lesser bidding price
-		createBidData.Amount = decimal.NewFromFloat(200.00)
+		createBidData.Amount = 200.00
 		jwt = CreateJwt(db, anotherVerifiedUser.ID)
 		res = ProcessTestBody(t, app, url, "POST", createBidData, jwt.Access)
 		// Assert Status code		
@@ -298,7 +298,7 @@ func createBid(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		assert.Equal(t, "Bid amount cannot be less than the bidding price!", body["message"])
 
 		// Verify that the bid was created successfully
-		createBidData.Amount = decimal.NewFromFloat(2000.00)
+		createBidData.Amount = 2000.00
 		res = ProcessTestBody(t, app, url, "POST", createBidData, jwt.Access)
 		// Assert response
 		assert.Equal(t, 201, res.StatusCode)

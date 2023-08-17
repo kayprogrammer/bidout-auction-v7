@@ -3,7 +3,6 @@ package schemas
 import (
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/satori/go.uuid"
-	"github.com/shopspring/decimal"
 )
 
 // REQUEST BODY SCHEMAS
@@ -12,7 +11,7 @@ type AddOrRemoveWatchlistSchema struct {
 }
 
 type CreateBidSchema struct {
-	Amount					decimal.Decimal			`json:"amount" validate:"required" example:"1000.00"`
+	Amount					float64			`json:"amount" validate:"required" example:"1000.00"`
 }
 
 // RESPONSE BODY SCHEMAS
