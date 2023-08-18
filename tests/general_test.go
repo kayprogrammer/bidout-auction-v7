@@ -7,10 +7,11 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/kayprogrammer/bidout-auction-v7/models"
-	"github.com/kayprogrammer/bidout-auction-v7/utils"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
+
+	"github.com/kayprogrammer/bidout-auction-v7/models"
+	"github.com/kayprogrammer/bidout-auction-v7/utils"
 )
 
 func getSiteDetails(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
@@ -76,12 +77,12 @@ func getReviews(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 
 		var expectedData []map[string]interface{}
 		expectedReviewerData := map[string]interface{}{
-			"name": reviewer.FullName(),
+			"name":   reviewer.FullName(),
 			"avatar": nil,
-		} 
+		}
 		expectedReviewData := map[string]interface{}{
-			"reviewer":  expectedReviewerData,
-			"text":   reviewText,
+			"reviewer": expectedReviewerData,
+			"text":     reviewText,
 		}
 		expectedData = append(expectedData, expectedReviewData)
 		data, _ := json.Marshal(body["data"])

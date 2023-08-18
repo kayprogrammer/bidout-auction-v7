@@ -1,26 +1,27 @@
 package tests
 
 import (
-	"fmt"
-	"testing"
 	"encoding/json"
+	"fmt"
 	"net/http/httptest"
+	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/kayprogrammer/bidout-auction-v7/models"
-	"github.com/kayprogrammer/bidout-auction-v7/schemas"
-	auth "github.com/kayprogrammer/bidout-auction-v7/authentication"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
+
+	auth "github.com/kayprogrammer/bidout-auction-v7/authentication"
+	"github.com/kayprogrammer/bidout-auction-v7/models"
+	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 )
 
 type MockEmailSender struct {
-    mock.Mock
+	mock.Mock
 }
 
 func (m *MockEmailSender) SendEmail(db *gorm.DB, user models.User, emailType string) {
-    m.Called(db, user, emailType)
+	m.Called(db, user, emailType)
 }
 
 func register(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
@@ -28,10 +29,10 @@ func register(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		url := fmt.Sprintf("%s/register", baseUrl)
 		validEmail := "testregisteruser@email.com"
 		userData := models.User{
-			FirstName: "TestRegister", 
-			LastName: "User", 
-			Email: validEmail,
-			Password: "testregisteruserpassword",
+			FirstName:      "TestRegister",
+			LastName:       "User",
+			Email:          validEmail,
+			Password:       "testregisteruserpassword",
 			TermsAgreement: true,
 		}
 
@@ -73,7 +74,7 @@ func verifyEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		url := fmt.Sprintf("%s/verify-email", baseUrl)
 		emailOtpData := schemas.VerifyEmailRequestSchema{
 			Email: user.Email,
-			Otp: otp,
+			Otp:   otp,
 		}
 
 		emailSenderMock := new(MockEmailSender)
@@ -135,7 +136,7 @@ func resendVerificationEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl 
 		*user.IsEmailVerified = true
 		db.Save(&user)
 		res = ProcessTestBody(t, app, url, "POST", emailData)
-		
+
 		assert.Equal(t, 200, res.StatusCode)
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
@@ -145,7 +146,7 @@ func resendVerificationEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl 
 		// Verify that an error is raised when attempting to resend the verification email for a user that doesn't exist
 		emailData.Email = "invalid@example.com"
 		res = ProcessTestBody(t, app, url, "POST", emailData)
-		
+
 		assert.Equal(t, 404, res.StatusCode)
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
@@ -181,7 +182,7 @@ func sendPasswordResetOtp(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl str
 		// Verify that an error is raised when attempting to send password reset email for a user that doesn't exist
 		emailData.Email = "invalid@example.com"
 		res = ProcessTestBody(t, app, url, "POST", emailData)
-		
+
 		assert.Equal(t, 404, res.StatusCode)
 		// Parse and assert body
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
@@ -202,7 +203,7 @@ func setNewPassword(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		passwordResetData := schemas.SetNewPasswordSchema{
 			VerifyEmailRequestSchema: schemas.VerifyEmailRequestSchema{
 				Email: "invalid@example.com", // Invalid otp
-				Otp: 11111, // Invalid otp
+				Otp:   11111,                 // Invalid otp
 			},
 			Password: "newpassword",
 		}
@@ -253,7 +254,7 @@ func login(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 
 		url := fmt.Sprintf("%s/login", baseUrl)
 		loginData := schemas.LoginSchema{
-			Email: "invalid@example.com", // Invalid email
+			Email:    "invalid@example.com", // Invalid email
 			Password: "invalidpassword",
 		}
 
@@ -289,9 +290,9 @@ func login(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		assert.Equal(t, "success", body["status"])
 		assert.Equal(t, "Login successful", body["message"])
 		jwt := models.Jwt{}
-		db.Find(&jwt,"user_id = ?", user.ID)
+		db.Find(&jwt, "user_id = ?", user.ID)
 		expectedData := map[string]string{
-			"access": jwt.Access,
+			"access":  jwt.Access,
 			"refresh": jwt.Refresh,
 		}
 		data, _ := json.Marshal(body["data"])
@@ -347,9 +348,9 @@ func refresh(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		assert.Equal(t, "success", body["status"])
 		assert.Equal(t, "Tokens refresh successful", body["message"])
 		jwt = models.Jwt{}
-		db.Find(&jwt,"user_id = ?", user.ID)
+		db.Find(&jwt, "user_id = ?", user.ID)
 		expectedData := map[string]string{
-			"access": jwt.Access,
+			"access":  jwt.Access,
 			"refresh": jwt.Refresh,
 		}
 		data, _ := json.Marshal(body["data"])

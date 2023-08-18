@@ -141,7 +141,10 @@ func CreateListing(c *fiber.Ctx) error {
 		category := models.Category{}
 		db.First(&category, "slug = ?", categorySlug)
 		if category.ID == uuid.Nil {
-			return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid category!"}.Init())
+			data := map[string]string{
+				"category": "Invalid category!",
+			}
+			return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
 		}
 		categoryId = &category.ID
 
@@ -218,7 +221,10 @@ func UpdateListing(c *fiber.Ctx) error {
 			category := models.Category{}
 			db.First(&category, "slug = ?", categorySlug)
 			if category.ID == uuid.Nil {
-				return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid category!"}.Init())
+				data := map[string]string{
+					"category": "Invalid category!",
+				}
+				return c.Status(422).JSON(utils.ErrorResponse{Message: "Invalid Entry", Data: &data}.Init())
 			}
 			listing.CategoryId = &category.ID
 
