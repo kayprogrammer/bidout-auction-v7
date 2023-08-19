@@ -103,12 +103,14 @@ func createListingImages(db *gorm.DB) []models.File {
 }
 
 func randomSelect(list []models.Category) (models.Category, error) {
-	// Set the seed for reproducible random number generation
-	seed := int64(42)
-	random := rand.New(rand.NewSource(seed))
+	// Create a custom random source seeded with the current time
+	source := rand.NewSource(time.Now().UnixNano())
+
+	// Create a new random number generator from the custom source
+	rng := rand.New(source)
 
 	// Generate a random index between 0 and the length of the list - 1
-	randomIndex := random.Intn(len(list))
+	randomIndex := rng.Intn(len(list))
 
 	// Return the randomly selected person from the list
 	return list[randomIndex], nil
