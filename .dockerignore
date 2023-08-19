@@ -1,0 +1,21 @@
+README.md
+.gitignore
+data
+.vscode
+.idea/
+letsencrypt
+poetry.lock
+.git/
+
+build
+dist
+*.egg-info
+*.egg/
+*.swp
+
+# Go-specific build artifacts
+__debug_bin/
+__debug_bin/*
+
+__pycache__
+vendor/

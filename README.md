@@ -19,7 +19,8 @@ A simple bidding API built with Fiber
 #### In the root directory:
 - Install all dependencies
 ```bash
-    $ go build
+    $ go install github.com/cosmtrek/air@latest 
+    $ go mod download
 ```
 - Create an `.env` file and copy the contents from the `.env.example` to the file and set the respective values. A postgres database can be created with PG ADMIN or psql
 
