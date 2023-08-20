@@ -134,7 +134,7 @@ func updateListing(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 	listing := CreateListing(db)
 
 	category := models.Category{}
-	db.Find(&category, "id = ?", listing.CategoryId)
+	db.Take(&category, listing.CategoryId)
 
 	t.Run("Update Listing", func(t *testing.T) {
 		url := fmt.Sprintf("%s/listings/%s", baseUrl, *listing.Slug)

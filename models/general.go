@@ -46,7 +46,7 @@ func (obj Review) Init(db *gorm.DB) Review{
 	avatarId := obj.ReviewerObj.AvatarId
 	if avatarId != nil {
 		avatar := File{}
-		db.Find(&avatar,"id = ?", avatarId)
+		db.Take(&avatar, avatarId)
 		url := utils.GenerateFileUrl(avatarId.String(), "avatars", avatar.ResourceType)
 		obj.Reviewer.Avatar = &url
 	}

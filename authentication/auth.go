@@ -69,7 +69,6 @@ func GenerateRefreshToken() string {
 
 func DecodeAccessToken(token string, db *gorm.DB) (*models.User, *string) {
 	claims := &AccessTokenPayload{}
-	jwtObj := models.Jwt{}
 
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return SECRETKEY, nil
@@ -86,9 +85,10 @@ func DecodeAccessToken(token string, db *gorm.DB) (*models.User, *string) {
 	if !tkn.Valid {
 		return nil, &tokenErr
 	}
+	jwtObj := models.Jwt{UserId: claims.UserId}
 
 	// Fetch Jwt model object
-	db.Preload(clause.Associations).Find(&jwtObj,"user_id = ?", claims.UserId)
+	db.Preload(clause.Associations).Take(&jwtObj, jwtObj)
 	if jwtObj.ID == uuid.Nil {
 		return nil, &tokenErr
 	}

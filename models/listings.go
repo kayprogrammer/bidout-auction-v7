@@ -23,7 +23,7 @@ type Category struct {
 // Function to retrieve a category by slug
 func getCategoryBySlug(db *gorm.DB, slug *string) Category {
 	var category Category
-	result := db.Where("slug = ?", slug).First(&category)
+	result := db.Take(&category, Category{Slug: slug})
 	err := result.Error 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -106,7 +106,7 @@ type Listing struct {
 // Function to retrieve a listing by slug
 func getListingBySlug(db *gorm.DB, slug *string) Listing {
 	var listing Listing
-	result := db.Where("slug = ?", slug).First(&listing)
+	result := db.Take(&listing, Listing{Slug: slug})
 	err := result.Error 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -190,7 +190,7 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 	avatarId := listing.AuctioneerObj.AvatarId
 	if avatarId != nil {
 		avatar := File{}
-		db.Find(&avatar,"id = ?", avatarId)
+		db.Take(&avatar, avatarId)
 		url := utils.GenerateFileUrl(avatarId.String(), "avatars", avatar.ResourceType)
 		listing.Auctioneer.Avatar = &url
 	}
@@ -198,7 +198,7 @@ func (listing Listing) Init(db *gorm.DB) Listing {
 	// Get Listing Image
 	imageId := listing.ImageId
 	image := File{}
-	db.Find(&image,"id = ?", imageId)
+	db.Take(&image, imageId)
 	url := utils.GenerateFileUrl(imageId.String(), "listings", image.ResourceType)
 	listing.Image = url
 
@@ -232,11 +232,11 @@ func (listing Listing) GetImageUploadData(db *gorm.DB) utils.SignatureFormat {
 // BID
 type Bid struct {
 	BaseModel
-	UserId				uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id"`
+	UserId				uuid.UUID			`json:"-" gorm:"column:user_id;not null;index:,unique,composite:user_id_listing_id"`
 	UserObj				User				`json:"-" gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;not null;"`
 	User				ShortUserData		`json:"user" gorm:"-"`
 
-	ListingId			uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id;index:,unique,composite:listing_id_amount"`
+	ListingId			uuid.UUID			`json:"-" gorm:"column:listing_id;not null;index:,unique,composite:user_id_listing_id;index:,unique,composite:listing_id_amount"`
 	Listing				Listing				`json:"-" gorm:"foreignKey:ListingId;constraint:OnDelete:CASCADE;not null;"`
 	Amount				decimal.Decimal		`json:"amount" gorm:"not null;index:,unique,composite:listing_id_amount"`
 }
@@ -248,14 +248,14 @@ func (bid *Bid) BeforeSave(tx *gorm.DB) (err error) {
 
 func (bid Bid) Init(db *gorm.DB) Bid {
 	user := User{}
-	db.Find(&user,"id = ?", bid.UserId)
+	db.Take(&user, bid.UserId)
 	name := user.FullName()
 	bid.User.Name = name
 
 	avatarId := user.AvatarId
 	if avatarId != nil {
 		avatar := File{}
-		db.Find(&avatar,"id = ?", avatarId)
+		db.Take(&avatar, avatarId)
 		url := utils.GenerateFileUrl(avatarId.String(), "avatars", avatar.ResourceType)
 		bid.User.Avatar = &url
 	}
@@ -269,13 +269,13 @@ func (bid Bid) Init(db *gorm.DB) Bid {
 // WATCHLIST
 type Watchlist struct {
 	BaseModel
-	UserId				*uuid.UUID			`json:"-" gorm:"null;index:,unique,composite:user_id_listing_id"`
+	UserId				*uuid.UUID			`json:"-" gorm:"column:user_id;null;index:,unique,composite:user_id_listing_id"`
 	User				*User				`json:"-" gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;null;"`
 
-	ListingId			uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id;index:,unique,composite:listing_id_guest_user_id"`
+	ListingId			uuid.UUID			`json:"-" gorm:"not null;index:,unique,composite:user_id_listing_id;index:,unique,composite:listing_id_guestuser_id"`
 	Listing				Listing				`json:"-" gorm:"foreignKey:ListingId;constraint:OnDelete:CASCADE;not null;"`
 
-	GuestUserId			*uuid.UUID			`json:"-" gorm:"null;index:,unique,composite:listing_id_guest_user_id"`
+	GuestUserId			*uuid.UUID			`json:"-" gorm:"column:guestuser_id;null;index:,unique,composite:listing_id_guestuser_id"`
 	GuestUser			*GuestUser			`json:"-" gorm:"foreignKey:GuestUserId;constraint:OnDelete:CASCADE;null;"`
 }
 

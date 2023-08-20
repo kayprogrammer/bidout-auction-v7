@@ -42,7 +42,7 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(422).JSON(err)
 	}
 
-	db.Find(&user, "email = ?", user.Email)
+	db.Take(&user, models.User{Email: user.Email})
 	if user.ID != uuid.Nil {
 		data := map[string]string{
 			"email": "Email already registered!",
@@ -85,8 +85,8 @@ func VerifyEmail(c *fiber.Ctx) error {
 		return c.Status(422).JSON(err)
 	}
 
-	user := models.User{}
-	db.Find(&user, "email = ?", verifyEmail.Email)
+	user := models.User{Email: verifyEmail.Email}
+	db.Take(&user, user)
 	if user.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
 	}
@@ -95,8 +95,8 @@ func VerifyEmail(c *fiber.Ctx) error {
 		return c.Status(200).JSON(schemas.ResponseSchema{Message: "Email already verified"}.Init())
 	}
 
-	otp := models.Otp{}
-	db.Find(&otp, "user_id = ?", user.ID)
+	otp := models.Otp{UserId: user.ID}
+	db.Take(&otp, otp)
 	if otp.ID == uuid.Nil || *otp.Code != verifyEmail.Otp {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Otp"}.Init())
 	}
@@ -138,8 +138,8 @@ func ResendVerificationEmail(c *fiber.Ctx) error {
 		return c.Status(422).JSON(err)
 	}
 
-	user := models.User{}
-	db.Find(&user, "email = ?", emailSchema.Email)
+	user := models.User{Email: emailSchema.Email}
+	db.Take(&user, user)
 	if user.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
 	}
@@ -178,8 +178,8 @@ func SendPasswordResetOtp(c *fiber.Ctx) error {
 		return c.Status(422).JSON(err)
 	}
 
-	user := models.User{}
-	db.Find(&user, "email = ?", emailSchema.Email)
+	user := models.User{Email: emailSchema.Email}
+	db.Take(&user, user)
 	if user.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
 	}
@@ -214,14 +214,14 @@ func SetNewPassword(c *fiber.Ctx) error {
 		return c.Status(422).JSON(err)
 	}
 
-	user := models.User{}
-	db.Find(&user, "email = ?", passwordResetSchema.Email)
+	user := models.User{Email: passwordResetSchema.Email}
+	db.Take(&user, user)
 	if user.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Email"}.Init())
 	}
 
-	otp := models.Otp{}
-	db.Find(&otp, "user_id = ?", user.ID)
+	otp := models.Otp{UserId: user.ID}
+	db.Take(&otp, otp)
 	if otp.ID == uuid.Nil || *otp.Code != passwordResetSchema.Otp {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Incorrect Otp"}.Init())
 	}
@@ -265,8 +265,8 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(422).JSON(err)
 	}
 
-	user := models.User{}
-	db.Find(&user, "email = ?", userLoginSchema.Email)
+	user := models.User{Email: userLoginSchema.Email}
+	db.Take(&user, user)
 	if user.ID == uuid.Nil {
 		return c.Status(401).JSON(utils.ErrorResponse{Message: "Invalid Credentials"}.Init())
 	}
@@ -282,14 +282,16 @@ func Login(c *fiber.Ctx) error {
 	access := auth.GenerateAccessToken(user.ID)
 	refresh := auth.GenerateRefreshToken()
 	jwt := models.Jwt{UserId: user.ID, Access: access, Refresh: refresh}
-	db.Where("user_id = ?", user.ID).Delete(&models.Jwt{}) // Delete existing jwt
+	jwtToDelete := models.Jwt{UserId: user.ID}
+	db.Where(jwtToDelete).Delete(&jwtToDelete) // Delete existing jwt
 	db.Create(&jwt)
 
 	// Move all guest user watchlists to the authenticated user watchlists
 	client := GetClient(c)
 	if (client != nil) && (client.Type == "guest") {
+		// clientId := client.
 		watchlists := []models.Watchlist{}
-		db.Where("guest_user_id = ?", client.ID).Find(&watchlists)
+		db.Find(&watchlists, models.Watchlist{GuestUserId: &client.ID})
 		if len(watchlists) > 0 {
 			watchlistsToCreate := []models.Watchlist{}
 			for _, wl := range watchlists {
@@ -298,7 +300,7 @@ func Login(c *fiber.Ctx) error {
 			}
 			db.Clauses(clause.OnConflict{DoNothing: true}).Create(&watchlistsToCreate)
 		}
-		db.Where("id = ?", client.ID).Delete(&models.GuestUser{})
+		db.Delete(&models.GuestUser{}, client.ID)
 	}
 	response := schemas.LoginResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Login successful"}.Init(),
@@ -331,8 +333,8 @@ func Refresh(c *fiber.Ctx) error {
 	}
 
 	token := refreshTokenSchema.Refresh
-	jwt := models.Jwt{}
-	db.Find(&jwt, "refresh = ?", token)
+	jwt := models.Jwt{Refresh: token}
+	db.Take(&jwt, jwt)
 	if jwt.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Refresh token does not exist"}.Init())
 	}
@@ -366,7 +368,8 @@ func Logout(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	user := c.Locals("user").(*models.User)
 
-	db.Where("user_id = ?", user.ID).Delete(&models.Jwt{}) // Delete jwt
+	jwt := models.Jwt{UserId: user.ID}
+	db.Where(jwt).Delete(&jwt) // Delete jwt
 
 	response := schemas.ResponseSchema{Message: "Logout successful"}.Init()
 	return c.Status(200).JSON(response)

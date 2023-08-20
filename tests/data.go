@@ -18,7 +18,7 @@ func CreateTestUser(db *gorm.DB) models.User {
 		Email: "testuser@example.com",
 		Password: "testpassword",
 	}
-	db.Where("email = ?", user.Email).FirstOrCreate(&user)
+	db.FirstOrCreate(&user, models.User{Email: user.Email})
 	return user
 }
 
@@ -30,7 +30,7 @@ func CreateTestVerifiedUser(db *gorm.DB) models.User {
 		Password: "testpassword",
 		IsEmailVerified: &truth,
 	}
-	db.Where("email = ?", user.Email).FirstOrCreate(&user)
+	db.FirstOrCreate(&user, models.User{Email: user.Email})
 	return user
 }
 
@@ -42,7 +42,7 @@ func CreateAnotherTestVerifiedUser(db *gorm.DB) models.User {
 		Password: "testpassword",
 		IsEmailVerified: &truth,
 	}
-	db.Where("email = ?", user.Email).FirstOrCreate(&user)
+	db.FirstOrCreate(&user, models.User{Email: user.Email})
 	return user
 }
 
@@ -50,7 +50,7 @@ func CreateJwt(db *gorm.DB, userId uuid.UUID) models.Jwt {
 	access := auth.GenerateAccessToken(userId)
 	refresh := auth.GenerateRefreshToken()
 	jwt := models.Jwt{UserId: userId, Access: access, Refresh: refresh}
-	db.Where("user_id = ?", userId).FirstOrCreate(&jwt)
+	db.FirstOrCreate(&jwt, models.Jwt{UserId: userId})
 	return jwt
 }
 

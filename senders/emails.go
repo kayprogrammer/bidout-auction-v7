@@ -11,7 +11,6 @@ import (
 
 	"github.com/kayprogrammer/bidout-auction-v7/config"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
-	uuid "github.com/satori/go.uuid"
 	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
@@ -27,15 +26,9 @@ func sortEmail(db *gorm.DB, user models.User, emailType string) map[string]inter
 	if emailType == "activate" {
         templateFile = "templates/email-activation.html"
         subject = "Activate your account"
-		otp := models.Otp{}
-		db.Find(&otp, "user_id = ?", user.ID)
-		log.Println(otp.ID)
-		if otp.ID == uuid.Nil {
-			otp = models.Otp{UserId: user.ID}
-			db.Create(&otp)
-		} else {
-			db.Save(&otp)
-		}
+		otp := models.Otp{UserId: user.ID}
+		db.Take(&otp, otp)
+		db.Save(&otp) // Create or save
         data["template_file"] = templateFile 
 		data["subject"] = subject 
 		data["otp"] = otp.Code
@@ -43,13 +36,9 @@ func sortEmail(db *gorm.DB, user models.User, emailType string) map[string]inter
 	} else if emailType == "reset"{
 		templateFile = "templates/password-reset.html"
         subject = "Reset your password"
-        otp := models.Otp{}
-		db.Find(&otp, "user_id = ?", user.ID)
-		if otp.ID == uuid.Nil {
-			db.Create(&otp)
-		} else {
-			db.Save(&otp)
-		}
+		otp := models.Otp{UserId: user.ID}
+		db.Take(&otp, otp)
+		db.Save(&otp) // Create or save
 		data["template_file"] = templateFile 
 		data["subject"] = subject 
 		data["otp"] = otp.Code

@@ -1,4 +1,4 @@
-# BIDOUT AUCTION V7 (WORK IN PROGRESS)
+# BIDOUT AUCTION V7 (CLEANUP IN PROGRESS)
 A simple bidding API built with Fiber 
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v7/blob/main/display/fiber.png?raw=true)

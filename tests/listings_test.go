@@ -196,7 +196,7 @@ func getCategoryListings(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl stri
 
 		// Verify that listings by a valid category slug succeeds
 		category := models.Category{}
-		db.Find(&category,"id = ?", listing.CategoryId)
+		db.Take(&category, listing.CategoryId)
 		url = fmt.Sprintf("%s/categories/%s", baseUrl, *category.Slug)
 		// Make request
 		req = httptest.NewRequest("GET", url, nil)

@@ -36,9 +36,12 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func isUUID(input string) bool {
-    _, err := uuid.FromString(input)
-    return err == nil
+func parseUUID(input string) *uuid.UUID {
+    uuidVal, err := uuid.FromString(input)
+	if err != nil {
+		return nil
+	}
+    return &uuidVal
 }
 
 func ClientMiddleware(c *fiber.Ctx) error {
@@ -51,10 +54,11 @@ func ClientMiddleware(c *fiber.Ctx) error {
 		c.Locals("client", nil)
 		if len(guestId) > 0 {
 			guest := models.GuestUser{}
-			if !isUUID(guestId) {
+			parsedUUID := parseUUID(guestId)
+			if parsedUUID == nil {
 				return c.Status(401).JSON(utils.ErrorResponse{Message: "Invalid type for guest id (use a uuid)"}.Init())
 			}
-			db.Find(&guest, "id = ?", guestId)
+			db.Take(&guest, *parsedUUID)
 			if guest.ID != uuid.Nil {
 				c.Locals("client", guest)
 			}

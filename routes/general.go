@@ -18,7 +18,7 @@ func GetSiteDetails(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	var sitedetail models.SiteDetail
 
-	db.FirstOrCreate(&sitedetail, &sitedetail)
+	db.FirstOrCreate(&sitedetail, sitedetail)
 	responseSiteDetail := schemas.SiteDetailResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Site Details Fetched!"}.Init(),
 		Data:           sitedetail,
@@ -47,7 +47,7 @@ func Subscribe(c *fiber.Ctx) error {
 	}
 
 	// Create subscriber
-	db.Where(models.Subscriber{Email: subscriber.Email}).FirstOrCreate(&subscriber)
+	db.FirstOrCreate(&subscriber, models.Subscriber{Email: subscriber.Email})
 
 	responseSubscriber := schemas.SubscriberResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Subscription successful!"}.Init(),
@@ -67,7 +67,7 @@ func GetReviews(c *fiber.Ctx) error {
 	reviews := []models.Review{}
 
 	// Get reviews
-	db.Preload(clause.Associations).Where(models.Review{Show: true}).Find(&reviews)
+	db.Preload(clause.Associations).Find(&reviews, models.Review{Show: true})
 
 	// Initialize each review object in the slice
 	for i := range reviews {

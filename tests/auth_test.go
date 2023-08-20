@@ -289,8 +289,8 @@ func login(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
 		assert.Equal(t, "success", body["status"])
 		assert.Equal(t, "Login successful", body["message"])
-		jwt := models.Jwt{}
-		db.Find(&jwt, "user_id = ?", user.ID)
+		jwt := models.Jwt{UserId: user.ID}
+		db.Take(&jwt, jwt)
 		expectedData := map[string]string{
 			"access":  jwt.Access,
 			"refresh": jwt.Refresh,
@@ -347,8 +347,8 @@ func refresh(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		body = ParseResponseBody(t, res.Body).(map[string]interface{})
 		assert.Equal(t, "success", body["status"])
 		assert.Equal(t, "Tokens refresh successful", body["message"])
-		jwt = models.Jwt{}
-		db.Find(&jwt, "user_id = ?", user.ID)
+		jwt = models.Jwt{UserId: user.ID}
+		db.Take(&jwt, jwt)
 		expectedData := map[string]string{
 			"access":  jwt.Access,
 			"refresh": jwt.Refresh,

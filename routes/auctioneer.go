@@ -5,7 +5,7 @@ import (
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 	"github.com/kayprogrammer/bidout-auction-v7/utils"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -61,7 +61,7 @@ func UpdateProfile(c *fiber.Ctx) error {
 		if user.AvatarId == nil {
 			db.Create(&file)
 		} else {
-			db.Model(models.File{}).Where("id = ?", user.AvatarId).Updates(&file)
+			db.Model(models.File{BaseModel: models.BaseModel{ID: *user.AvatarId}}).Updates(&file)
 			file.ID = *user.AvatarId
 		}
 		user.AvatarId = &file.ID
@@ -96,7 +96,7 @@ func GetAuctioneerListings(c *fiber.Ctx) error {
 	listings := []models.Listing{}
 	quantity := c.QueryInt("quantity")
 	// Get listings
-	db.Preload(clause.Associations).Order("created_at DESC").Find(&listings,"auctioneer_id = ?", user.ID)
+	db.Preload(clause.Associations).Order("created_at DESC").Find(&listings, models.Listing{AuctioneerId: user.ID})
 
 	// Initialize each listing object in the slice
 	for i := range listings {
@@ -138,8 +138,8 @@ func CreateListing(c *fiber.Ctx) error {
 	categorySlug := createListingData.Category
 	// Validate Category
 	if categorySlug != "other" {
-		category := models.Category{}
-		db.First(&category, "slug = ?", categorySlug)
+		category := models.Category{Slug: &categorySlug}
+		db.Take(&category, category)
 		if category.ID == uuid.Nil {
 			data := map[string]string{
 				"category": "Invalid category!",
@@ -157,19 +157,19 @@ func CreateListing(c *fiber.Ctx) error {
 
 	listing := models.Listing{
 		AuctioneerId: user.ID,
-		Name: createListingData.Name,
-		Desc: createListingData.Desc,
-		CategoryId: categoryId,
-		Active: true,
-		Price: utils.DecimalParser(createListingData.Price),
-		ClosingDate: utils.TimeParser(createListingData.ClosingDate),
-		ImageId: file.ID,
+		Name:         createListingData.Name,
+		Desc:         createListingData.Desc,
+		CategoryId:   categoryId,
+		Active:       true,
+		Price:        utils.DecimalParser(createListingData.Price),
+		ClosingDate:  utils.TimeParser(createListingData.ClosingDate),
+		ImageId:      file.ID,
 	}
 	db.Create(&listing)
-	db.Preload(clause.Associations).First(&listing, listing.ID)
+	db.Preload(clause.Associations).Take(&listing, listing.ID)
 
 	listingData := schemas.CreateListingResponseDataSchema{
-		Listing: listing.Init(db),
+		Listing:        listing.Init(db),
 		FileUploadData: listing.GetImageUploadData(db),
 	}
 	response := schemas.CreateListingResponseSchema{
@@ -193,9 +193,9 @@ func UpdateListing(c *fiber.Ctx) error {
 	user := c.Locals("user").(*models.User)
 	validator := utils.Validator()
 
-	listing := models.Listing{}
 	listingSlug := c.Params("slug")
-	db.First(&listing, "slug = ?", listingSlug)
+	listing := models.Listing{Slug: &listingSlug}
+	db.Take(&listing, listing)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Invalid listing!"}.Init())
 	}
@@ -218,8 +218,8 @@ func UpdateListing(c *fiber.Ctx) error {
 		// Validate Category
 		other := "other"
 		if categorySlug != &other {
-			category := models.Category{}
-			db.First(&category, "slug = ?", categorySlug)
+			category := models.Category{Slug: categorySlug}
+			db.Take(&category, category)
 			if category.ID == uuid.Nil {
 				data := map[string]string{
 					"category": "Invalid category!",
@@ -232,20 +232,20 @@ func UpdateListing(c *fiber.Ctx) error {
 			listing.CategoryId = nil
 		}
 	}
-	
+
 	fileType := updateListingData.FileType
 	if fileType != nil {
 		file := models.File{ResourceType: *fileType}
-		db.Model(models.File{}).Where("id = ?", listing.ImageId).Updates(&file)
+		db.Model(models.File{BaseModel: models.BaseModel{ID: listing.ImageId}}).Updates(&file)
 	}
-	
+
 	// Assign data to listing
 	utils.AssignFields(updateListingData, &listing)
 	db.Save(&listing)
-	db.Preload(clause.Associations).First(&listing, listing.ID)
+	db.Preload(clause.Associations).Take(&listing, listing.ID)
 
 	listingData := schemas.CreateListingResponseDataSchema{
-		Listing: listing.Init(db),
+		Listing:        listing.Init(db),
 		FileUploadData: listing.GetImageUploadData(db),
 	}
 	response := schemas.CreateListingResponseSchema{
@@ -269,10 +269,10 @@ func GetAuctioneerListingBids(c *fiber.Ctx) error {
 
 	listingSlug := c.Params("slug")
 
-	listing := models.Listing{}
+	listing := models.Listing{Slug: &listingSlug}
 	db.Preload("Bids", func(db *gorm.DB) *gorm.DB {
 		return db.Order("updated_at DESC").Limit(3) // Order by updated
-	}).Find(&listing, "slug = ?", listingSlug)
+	}).Find(&listing, listing)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Invalid listing!"}.Init())
 	}

@@ -30,8 +30,8 @@ func GetListings(c *fiber.Ctx) error {
 	for i := range listings {
 		listings[i] = listings[i].Init(db)
 		if client != nil {
-			watchlist := models.Watchlist{}
-			db.Where("(user_id = ? OR guest_user_id = ?) AND listing_id = ?", client.ID, client.ID, listings[i].ID).Take(&watchlist)
+			watchlist := models.Watchlist{ListingId: listings[i].ID}
+			db.Where(db.Where(models.Watchlist{UserId: &client.ID}).Or(models.Watchlist{GuestUserId: &client.ID})).Take(&watchlist, watchlist)
 			if watchlist.ID != uuid.Nil {
 				listings[i].Watchlist = true
 			}
@@ -55,17 +55,17 @@ func GetListings(c *fiber.Ctx) error {
 // @Router /listings/detail/{slug} [get]
 func GetListing(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
-	listing := models.Listing{}
 	slug := c.Params("slug")
+	listing := models.Listing{Slug: &slug}
 
 	// Get listing
-	db.Preload(clause.Associations).Find(&listing, "slug = ?", slug)
+	db.Preload(clause.Associations).Take(&listing, listing)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
 	}
 	listing = listing.Init(db)
 	relatedListings := []models.Listing{}
-	db.Preload(clause.Associations).Order("created_at DESC").Where("category_id = ? AND NOT id = ?", listing.CategoryId, listing.ID).Limit(3).Find(&relatedListings)
+	db.Preload(clause.Associations).Order("created_at DESC").Not(models.BaseModel{ID: listing.ID}).Limit(3).Find(&relatedListings, models.Listing{CategoryId: listing.CategoryId})
 
 	response := schemas.ListingDetailResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Listing details fetched"}.Init(),
@@ -92,7 +92,7 @@ func GetWatchlistListings(c *fiber.Ctx) error {
 
 	// Get watchlists
 	if client != nil {
-		db.Preload("Listing.AuctioneerObj").Preload("Listing.CategoryObj").Preload(clause.Associations).Where("user_id = ?", client.ID).Or("guest_user_id = ?", client.ID).Order("created_at DESC").Find(&watchlists)
+		db.Preload("Listing.AuctioneerObj").Preload("Listing.CategoryObj").Preload(clause.Associations).Where(models.Watchlist{UserId: &client.ID}).Or(models.Watchlist{GuestUserId: &client.ID}).Order("created_at DESC").Find(&watchlists)
 	}
 	for i := range watchlists {
 		listing := watchlists[i].Listing
@@ -133,8 +133,8 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 	}
 
 	// Get listing
-	listing := models.Listing{}
-	db.Preload(clause.Associations).Find(&listing, "slug = ?", addRemoveWatchlistData.Slug)
+	listing := models.Listing{Slug: &addRemoveWatchlistData.Slug}
+	db.Preload(clause.Associations).Take(&listing, listing)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
 	}
@@ -149,8 +149,8 @@ func AddOrRemoveWatchlistListing(c *fiber.Ctx) error {
 	respMessage := "Listing added to user watchlist"
 	statusCode := 201
 	// Check if watchlist exists
-	watchlist := models.Watchlist{}
-	result := db.Where("(user_id = ? OR guest_user_id = ?) AND listing_id = ?", client.ID, client.ID, listing.ID).Take(&watchlist)
+	watchlist := models.Watchlist{ListingId: listing.ID}
+	result := db.Where(db.Where(models.Watchlist{UserId: &client.ID}).Or(models.Watchlist{GuestUserId: &client.ID})).Take(&watchlist, watchlist)
 	if result.Error == gorm.ErrRecordNotFound {
 		// Create Watchlist
 		watchlistToCreate := models.Watchlist{ListingId: listing.ID}
@@ -217,8 +217,8 @@ func GetCategoryListings(c *fiber.Ctx) error {
 	if categorySlug == "other" {
 		categoryId = nil
 	} else {
-		category := models.Category{}
-		db.First(&category, "slug = ?", categorySlug)
+		category := models.Category{Slug: &categorySlug}
+		db.First(&category, category)
 		if category.ID == uuid.Nil {
 			return c.Status(404).JSON(utils.ErrorResponse{Message: "Invalid category!"}.Init())
 		}
@@ -227,14 +227,14 @@ func GetCategoryListings(c *fiber.Ctx) error {
 	
 	// Get listings
 	listings := []models.Listing{}
-	db.Preload(clause.Associations).Order("created_at DESC").Find(&listings, "category_id = ?", categoryId)
+	db.Preload(clause.Associations).Order("created_at DESC").Find(&listings, models.Listing{CategoryId: categoryId})
 
 	// Initialize each listing object in the slice
 	for i := range listings {
 		listings[i] = listings[i].Init(db)
 		if client != nil {
-			watchlist := models.Watchlist{}
-			db.Where("(user_id = ? OR guest_user_id = ?) AND listing_id = ?", client.ID, client.ID, listings[i].ID).Take(&watchlist)
+			watchlist := models.Watchlist{ListingId: listings[i].ID}
+			db.Where(db.Where(models.Watchlist{UserId: &client.ID}).Or(models.Watchlist{GuestUserId: &client.ID})).Take(&watchlist, watchlist)
 			if watchlist.ID != uuid.Nil {
 				listings[i].Watchlist = true
 			}
@@ -258,10 +258,10 @@ func GetListingBids(c *fiber.Ctx) error {
 	db := c.Locals("db").(*gorm.DB)
 	listingSlug := c.Params("slug")
 
-	listing := models.Listing{}
+	listing := models.Listing{Slug: &listingSlug}
 	db.Preload("Bids", func(db *gorm.DB) *gorm.DB {
 		return db.Order("updated_at DESC").Limit(3) // Order by updated
-	}).Find(&listing, "slug = ?", listingSlug)
+	}).Take(&listing, listing)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Invalid listing!"}.Init())
 	}
@@ -295,10 +295,10 @@ func CreateBid(c *fiber.Ctx) error {
 	listingSlug := c.Params("slug")
 
 	// Get Listing
-	listing := models.Listing{}
+	listing := models.Listing{Slug: &listingSlug}
 	db.Preload("Bids", func(db *gorm.DB) *gorm.DB {
 		return db.Order("updated_at DESC").Limit(1) // Order by updated (Latest bid is surely the highest bid)
-	}).Find(&listing, "slug = ?", listingSlug)
+	}).Find(&listing, listing)
 	if listing.ID == uuid.Nil {
 		return c.Status(404).JSON(utils.ErrorResponse{Message: "Listing does not exist!"}.Init())
 	}
@@ -330,7 +330,7 @@ func CreateBid(c *fiber.Ctx) error {
 
 	// Check for existing bid
 	bid := models.Bid{UserId: user.ID, ListingId: listing.ID}
-	db.Where(bid).First(&bid)
+	db.Take(&bid, bid)
 
 	// Create or update
 	bid.Amount = amount
