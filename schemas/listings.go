@@ -11,7 +11,7 @@ type AddOrRemoveWatchlistSchema struct {
 }
 
 type CreateBidSchema struct {
-	Amount					float64			`json:"amount" validate:"required" example:"1000.00"`
+	Amount					float64			`json:"amount" validate:"required,gt=0" example:"1000.00"`
 }
 
 // RESPONSE BODY SCHEMAS

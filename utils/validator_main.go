@@ -56,6 +56,7 @@ func registerTranslations(param string) {
     }
 
     registerTranslation("date", "Invalid date format!", translator)
+    registerTranslation("gt", "Value is too small!", translator)
     registerTranslation("closing_date_validator", "Closing date must be beyond the current datetime!", translator)
     registerTranslation("file_type_validator", "Invalid file type", translator)
     registerTranslation("required", "This field is required.", translator)
