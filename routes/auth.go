@@ -13,14 +13,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type EmailSender struct{}
-
-func (es *EmailSender) SendEmail(db *gorm.DB, user models.User, emailType string) {
-	// Implementation of sending an actual email using your preferred email library.
-	// Replace this with your real email sending code.
-	senders.SendEmail(db, user, emailType)
-}
-
 // @Summary Register a new user
 // @Description This endpoint registers new users into our application.
 // @Tags Auth
@@ -54,8 +46,7 @@ func Register(c *fiber.Ctx) error {
 	db.Create(&user)
 
 	// Send Email
-	emailSender := &EmailSender{}
-	go emailSender.SendEmail(db, user, "activate")
+	go senders.SendEmail(c.Locals("env"), db, user, "activate")
 
 	response := schemas.RegisterResponseSchema{
 		ResponseSchema: schemas.ResponseSchema{Message: "Registration successful"}.Init(),
@@ -110,8 +101,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 	db.Save(&user)
 
 	// Send Welcome Email
-	emailSender := &EmailSender{}
-	go emailSender.SendEmail(db, user, "welcome")
+	go senders.SendEmail(c.Locals("env"), db, user, "welcome")
 
 	response := schemas.ResponseSchema{Message: "Account verification successful"}.Init()
 	return c.Status(200).JSON(response)
@@ -149,8 +139,7 @@ func ResendVerificationEmail(c *fiber.Ctx) error {
 	}
 
 	// Send Email
-	emailSender := &EmailSender{}
-	go emailSender.SendEmail(db, user, "activate")
+	go senders.SendEmail(c.Locals("env"), db, user, "activate")
 
 	response := schemas.ResponseSchema{Message: "Verification email sent"}.Init()
 	return c.Status(200).JSON(response)
@@ -185,8 +174,7 @@ func SendPasswordResetOtp(c *fiber.Ctx) error {
 	}
 
 	// Send Email
-	emailSender := &EmailSender{}
-	go emailSender.SendEmail(db, user, "reset")
+	go senders.SendEmail(c.Locals("env"), db, user, "reset")
 
 	response := schemas.ResponseSchema{Message: "Password otp sent"}.Init()
 	return c.Status(200).JSON(response)
@@ -235,8 +223,7 @@ func SetNewPassword(c *fiber.Ctx) error {
 	db.Save(&user)
 
 	// Send Email
-	emailSender := &EmailSender{}
-	go emailSender.SendEmail(db, user, "reset-success")
+	go senders.SendEmail(c.Locals("env"), db, user, "reset-success")
 
 	response := schemas.ResponseSchema{Message: "Password reset successful"}.Init()
 	return c.Status(200).JSON(response)

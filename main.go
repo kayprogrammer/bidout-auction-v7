@@ -48,6 +48,12 @@ func main() {
 		AllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
 	}))
 
+	// Inject environment text
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("env", "normal")
+		return c.Next()
+	})
+
 	// Register routes
 	routes.SetupRoutes(app)
 	app.Get("/*", swagger.HandlerDefault) // default

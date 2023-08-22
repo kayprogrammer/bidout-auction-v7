@@ -8,21 +8,12 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
 
 	auth "github.com/kayprogrammer/bidout-auction-v7/authentication"
 	"github.com/kayprogrammer/bidout-auction-v7/models"
 	"github.com/kayprogrammer/bidout-auction-v7/schemas"
 )
-
-type MockEmailSender struct {
-	mock.Mock
-}
-
-func (m *MockEmailSender) SendEmail(db *gorm.DB, user models.User, emailType string) {
-	m.Called(db, user, emailType)
-}
 
 func register(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 	t.Run("Register User", func(t *testing.T) {
@@ -35,9 +26,6 @@ func register(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 			Password:       "testregisteruserpassword",
 			TermsAgreement: true,
 		}
-
-		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("SendEmail", db, userData, "activate").Return()
 
 		res := ProcessTestBody(t, app, url, "POST", userData)
 
@@ -77,9 +65,6 @@ func verifyEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 			Otp:   otp,
 		}
 
-		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("SendEmail", db, user, "welcome").Return()
-
 		res := ProcessTestBody(t, app, url, "POST", emailOtpData)
 
 		// Verify that the email verification fails with an invalid otp
@@ -117,9 +102,6 @@ func resendVerificationEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl 
 		emailData := schemas.EmailRequestSchema{
 			Email: user.Email,
 		}
-
-		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("SendEmail", db, user, "activate").Return()
 
 		res := ProcessTestBody(t, app, url, "POST", emailData)
 
@@ -165,9 +147,6 @@ func sendPasswordResetOtp(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl str
 			Email: user.Email,
 		}
 
-		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("SendEmail", db, user, "reset").Return()
-
 		res := ProcessTestBody(t, app, url, "POST", emailData)
 
 		// Verify that an unverified user can get a new email
@@ -207,9 +186,6 @@ func setNewPassword(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 			},
 			Password: "newpassword",
 		}
-
-		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("SendEmail", db, user, "reset-success").Return()
 
 		res := ProcessTestBody(t, app, url, "POST", passwordResetData)
 
