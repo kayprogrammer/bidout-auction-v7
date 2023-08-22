@@ -37,7 +37,7 @@ func register(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		}
 
 		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("sendEmail", db, userData, "activate").Return(nil)
+		emailSenderMock.On("SendEmail", db, userData, "activate").Return()
 
 		res := ProcessTestBody(t, app, url, "POST", userData)
 
@@ -78,7 +78,7 @@ func verifyEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		}
 
 		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("sendEmail", db, user, "welcome").Return(nil)
+		emailSenderMock.On("SendEmail", db, user, "welcome").Return()
 
 		res := ProcessTestBody(t, app, url, "POST", emailOtpData)
 
@@ -119,7 +119,7 @@ func resendVerificationEmail(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl 
 		}
 
 		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("sendEmail", db, user, "activate").Return(nil)
+		emailSenderMock.On("SendEmail", db, user, "activate").Return()
 
 		res := ProcessTestBody(t, app, url, "POST", emailData)
 
@@ -166,7 +166,7 @@ func sendPasswordResetOtp(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl str
 		}
 
 		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("sendEmail", db, user, "reset").Return(nil)
+		emailSenderMock.On("SendEmail", db, user, "reset").Return()
 
 		res := ProcessTestBody(t, app, url, "POST", emailData)
 
@@ -209,7 +209,7 @@ func setNewPassword(t *testing.T, app *fiber.App, db *gorm.DB, baseUrl string) {
 		}
 
 		emailSenderMock := new(MockEmailSender)
-		emailSenderMock.On("sendEmail", db, user, "reset-success").Return(nil)
+		emailSenderMock.On("SendEmail", db, user, "reset-success").Return()
 
 		res := ProcessTestBody(t, app, url, "POST", passwordResetData)
 
