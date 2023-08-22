@@ -126,6 +126,12 @@ definitions:
     - last_name
     - password
     type: object
+  routes.HealthCheckSchema:
+    properties:
+      success:
+        example: pong
+        type: string
+    type: object
   schemas.AddOrRemoveWatchlistResponseDataSchema:
     properties:
       guestuser_id:
@@ -904,6 +910,17 @@ paths:
       summary: Add a subscriber
       tags:
       - General
+  /healthcheck:
+    get:
+      description: This endpoint checks the health of our application.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.HealthCheckSchema'
+      summary: HealthCheck
+      tags:
+      - HealthCheck
   /listings:
     get:
       description: This endpoint retrieves all listings.

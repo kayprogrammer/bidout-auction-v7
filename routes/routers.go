@@ -8,13 +8,14 @@ import (
 func SetupRoutes(app *fiber.App) {
 	api := app.Group("/api/v7")
 
+	// HealthCheck Route
+	api.Get("/healthcheck", HealthCheck) 
+
 	// General Routes
 	generalRouter := api.Group("/general")
 	generalRouter.Get("/site-detail", GetSiteDetails)
 	generalRouter.Post("/subscribe", Subscribe)
 	generalRouter.Get("/reviews", GetReviews)
-	
-
 
 	// Auth Routes
 	authRouter := api.Group("/auth")

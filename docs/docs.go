@@ -600,6 +600,23 @@ const docTemplate = `{
                 }
             }
         },
+        "/healthcheck": {
+            "get": {
+                "description": "This endpoint checks the health of our application.",
+                "tags": [
+                    "HealthCheck"
+                ],
+                "summary": "HealthCheck",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.HealthCheckSchema"
+                        }
+                    }
+                }
+            }
+        },
         "/listings": {
             "get": {
                 "security": [
@@ -1043,6 +1060,15 @@ const docTemplate = `{
                 },
                 "terms_agreement": {
                     "type": "boolean"
+                }
+            }
+        },
+        "routes.HealthCheckSchema": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "string",
+                    "example": "pong"
                 }
             }
         },
