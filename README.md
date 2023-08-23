@@ -1,4 +1,4 @@
-# BIDOUT AUCTION V7 (CLEANUP IN PROGRESS)
+# BIDOUT AUCTION V7
 A simple bidding API built with Fiber 
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v7/blob/main/display/fiber.png?raw=true)
@@ -47,7 +47,7 @@ OR
     $ make test
 ```
 
-<!-- ## Docs
+## Docs
 #### API Url: [BidOut Docs](http://127.0.0.1:8000/) 
 #### Swagger: [Documentation](https://swagger.io/docs/)
 
@@ -63,4 +63,4 @@ OR
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v7/blob/main/display/display6.png?raw=true)
 
-![alt text](https://github.com/kayprogrammer/bidout-auction-v7/blob/main/display/display7.png?raw=true) -->
+![alt text](https://github.com/kayprogrammer/bidout-auction-v7/blob/main/display/display7.png?raw=true)
