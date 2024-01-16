@@ -22,3 +22,5 @@ go.work
 
 # Env files
 .env
+
+tmp/
