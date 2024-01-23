@@ -7,7 +7,7 @@ A simple bidding API built with Fiber
 #### FIBER DOCS: [Documentation](https://docs.gofiber.io/)
 #### GORM DOCS: [Documentation](https://gorm.io/)
 #### PG ADMIN: [Documentation](https://pgadmin.org) 
-
+#### Swagger: [Documentation](https://swagger.io/docs/)
 
 ## How to run locally
 
@@ -48,8 +48,8 @@ OR
 ```
 
 ## Docs
-#### API Url: [BidOut Docs](http://127.0.0.1:8000/) 
-#### Swagger: [Documentation](https://swagger.io/docs/)
+#### SWAGGER API Url: [BidOut Docs](https://bidout-fastapi.vercel.app/)
+#### POSTMAN API Url: [BidOut Docs](https://bit.ly/bidout-api)
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v7/blob/main/display/display1.png?raw=true)
 
