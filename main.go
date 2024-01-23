@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"github.com/gofiber/swagger"
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/kayprogrammer/bidout-auction-v7/database"
@@ -48,6 +48,15 @@ func main() {
 		AllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
 	}))
 
+	// Swagger Config
+	swaggerCfg := swagger.Config{
+		FilePath: "./docs/swagger.json",
+		Path:     "/",
+		Title: "BIDOUT API Documentation",
+	}
+	
+	app.Use(swagger.New(swaggerCfg))
+
 	// Inject environment text
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("env", "normal")
@@ -56,7 +65,5 @@ func main() {
 
 	// Register routes
 	routes.SetupRoutes(app)
-	app.Get("/*", swagger.HandlerDefault) // default
-
 	log.Fatal(app.Listen(":8000"))
 }
