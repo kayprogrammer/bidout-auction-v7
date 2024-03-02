@@ -219,7 +219,7 @@ func SetNewPassword(c *fiber.Ctx) error {
 	}
 
 	// Set Password
-	user.Password = passwordResetSchema.Password
+	user.Password = utils.HashPassword(passwordResetSchema.Password)
 	db.Save(&user)
 
 	// Send Email
